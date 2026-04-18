@@ -1,7 +1,21 @@
-<script setup>
-import HelloWorld from './components/HelloWorld.vue'
+<template>
+  <router-view />
+</template>
+
+<script>
+export default {
+  name: 'App'
+}
 </script>
 
-<template>
-  <HelloWorld />
-</template>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+}
+</style>
