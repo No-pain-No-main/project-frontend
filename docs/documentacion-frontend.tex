@@ -1,0 +1,571 @@
+﻿\documentclass[12pt]{article}
+
+\usepackage[spanish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{longtable}
+\usepackage{enumitem}
+
+\geometry{
+    letterpaper,
+    margin=2.5cm
+}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=blue
+}
+
+\title{\textbf{Documentación del Frontend del Sistema de Reservas del Gimnasio UNAL}}
+\author{Equipo No Pain No Main}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Introducción}
+
+El presente documento describe el trabajo realizado en el frontend del sistema de reservas de máquinas del gimnasio de la Universidad Nacional de Colombia, sede Bogotá. El desarrollo se realizó utilizando Vue.js con Vite, siguiendo una arquitectura organizada por capas para separar responsabilidades y facilitar el mantenimiento del proyecto.
+
+El frontend fue reconstruido desde cero en una rama independiente llamada:
+
+\begin{verbatim}
+feature/frontend-architecture
+\end{verbatim}
+
+Esta decisión permitió trabajar sin afectar directamente la rama principal del repositorio. Además, como el backend y la base de datos ya existen pero todavía no cuentan con endpoints implementados, el frontend se construyó con datos simulados o \textit{mocks}. De esta manera, las pantallas pueden probarse visual y funcionalmente sin depender todavía de la API real.
+
+\section{Objetivo del trabajo}
+
+El objetivo principal fue construir una interfaz frontend funcional, ordenada y preparada para integrarse posteriormente con el backend del sistema.
+
+Los objetivos específicos fueron:
+
+\begin{itemize}
+    \item Rehacer el proyecto frontend desde cero usando Vue.js.
+    \item Crear una arquitectura por capas clara.
+    \item Implementar las pantallas principales definidas en los casos de uso y mockups.
+    \item Utilizar datos simulados mientras se construyen los endpoints del backend.
+    \item Dejar el proyecto preparado para una futura conexión con la API.
+    \item Documentar la estructura y las decisiones técnicas tomadas.
+\end{itemize}
+
+\section{Tecnologías utilizadas}
+
+Para el desarrollo se utilizaron las siguientes tecnologías:
+
+\begin{itemize}
+    \item \textbf{Vue.js}: framework principal para construir la interfaz.
+    \item \textbf{Vite}: herramienta para crear y ejecutar el proyecto frontend.
+    \item \textbf{Vue Router}: librería para manejar la navegación entre pantallas.
+    \item \textbf{Pinia}: librería instalada para manejo futuro de estado global.
+    \item \textbf{Axios}: librería instalada para futuras peticiones HTTP al backend.
+    \item \textbf{Git y GitHub}: control de versiones y trabajo por ramas.
+    \item \textbf{PowerShell}: terminal utilizada para ejecutar comandos y crear archivos.
+\end{itemize}
+
+\section{Creación de la rama de trabajo}
+
+Primero se clonó el repositorio del frontend:
+
+\begin{verbatim}
+git clone https://github.com/No-pain-No-main/project-frontend.git
+\end{verbatim}
+
+Luego se ingresó a la carpeta del proyecto:
+
+\begin{verbatim}
+cd project-frontend
+\end{verbatim}
+
+Después se creó una rama independiente:
+
+\begin{verbatim}
+git checkout -b feature/frontend-architecture
+\end{verbatim}
+
+Esta rama se usó para evitar modificar directamente la rama principal del proyecto.
+
+\section{Reconstrucción del proyecto Vue}
+
+Al revisar el repositorio, se encontró que varios archivos principales del proyecto Vue habían sido eliminados en commits anteriores, incluyendo:
+
+\begin{itemize}
+    \item \texttt{package.json}
+    \item \texttt{vite.config.js}
+    \item \texttt{index.html}
+    \item carpeta \texttt{src/}
+    \item carpeta \texttt{public/}
+\end{itemize}
+
+Por esta razón, se decidió reconstruir la base del proyecto desde cero con Vite:
+
+\begin{verbatim}
+npm create vite@latest . -- --template vue
+npm install
+npm install vue-router@4 axios pinia
+\end{verbatim}
+
+Después se verificó que el proyecto funcionara correctamente ejecutando:
+
+\begin{verbatim}
+npm run dev
+\end{verbatim}
+
+El servidor local quedó disponible en:
+
+\begin{verbatim}
+http://localhost:5173/
+\end{verbatim}
+
+\section{Arquitectura por capas}
+
+El frontend se organizó en capas para separar responsabilidades. Esta organización permite que el proyecto sea más fácil de entender, modificar y conectar posteriormente con el backend.
+
+La estructura principal creada fue:
+
+\begin{verbatim}
+src/
+|-- assets/
+|   `-- styles/
+|-- components/
+|   |-- common/
+|   |-- auth/
+|   |-- machines/
+|   |-- reservations/
+|   `-- reports/
+|-- layouts/
+|-- mocks/
+|-- router/
+|-- services/
+|-- stores/
+|-- views/
+|   |-- auth/
+|   |-- student/
+|   `-- admin/
+|-- App.vue
+|-- main.js
+`-- style.css
+\end{verbatim}
+
+\subsection{Capa de vistas: \texttt{views}}
+
+La carpeta \texttt{views} contiene las pantallas completas del sistema. Cada vista representa una página principal a la que el usuario puede navegar.
+
+Se dividió en tres grupos:
+
+\begin{itemize}
+    \item \texttt{views/auth}: pantallas públicas de autenticación.
+    \item \texttt{views/student}: pantallas del estudiante.
+    \item \texttt{views/admin}: pantallas del administrador.
+\end{itemize}
+
+Ejemplos de vistas creadas:
+
+\begin{verbatim}
+LoginView.vue
+RegisterView.vue
+CreateReservationView.vue
+MyReservationsView.vue
+CreateMachineView.vue
+MachineStatusView.vue
+ReservationHistoryView.vue
+ReportsView.vue
+\end{verbatim}
+
+\subsection{Capa de componentes: \texttt{components}}
+
+La carpeta \texttt{components} contiene partes reutilizables de la interfaz. La idea es evitar repetir código en varias vistas.
+
+Se crearon componentes comunes como:
+
+\begin{itemize}
+    \item \texttt{AppButton.vue}: botón reutilizable.
+    \item \texttt{AppInput.vue}: campo de entrada reutilizable.
+    \item \texttt{AppSelect.vue}: selector reutilizable.
+\end{itemize}
+
+También se crearon componentes específicos por módulo:
+
+\begin{itemize}
+    \item \texttt{LoginForm.vue}
+    \item \texttt{RegisterForm.vue}
+    \item \texttt{MachineCard.vue}
+    \item \texttt{MachineForm.vue}
+    \item \texttt{MachineStatusTable.vue}
+    \item \texttt{ReservationCard.vue}
+\end{itemize}
+
+\subsection{Capa de layouts: \texttt{layouts}}
+
+Los layouts permiten definir estructuras visuales comunes para varias pantallas.
+
+Se crearon tres layouts:
+
+\begin{itemize}
+    \item \texttt{AuthLayout.vue}: usado para login y registro.
+    \item \texttt{StudentLayout.vue}: usado para las pantallas del estudiante.
+    \item \texttt{AdminLayout.vue}: usado para las pantallas del administrador.
+\end{itemize}
+
+El layout del estudiante contiene un menú lateral con:
+
+\begin{itemize}
+    \item Inicio
+    \item Reservar máquina
+    \item Mis reservas
+\end{itemize}
+
+El layout del administrador contiene un menú lateral con:
+
+\begin{itemize}
+    \item Inicio
+    \item Registrar máquina
+    \item Estados de máquinas
+    \item Historial de reservas
+    \item Reportes
+\end{itemize}
+
+\subsection{Capa de rutas: \texttt{router}}
+
+La carpeta \texttt{router} contiene la configuración de navegación del sistema. Se usó Vue Router para definir rutas públicas, rutas del estudiante y rutas del administrador.
+
+Las rutas principales fueron:
+
+\begin{verbatim}
+/login
+/register
+/student
+/student/reservations/create
+/student/reservations
+/admin
+/admin/machines/create
+/admin/machines/status
+/admin/reservations/history
+/admin/reports
+\end{verbatim}
+
+Además, se configuraron rutas anidadas para que las vistas del estudiante y del administrador se rendericen dentro de sus respectivos layouts.
+
+\subsection{Capa de mocks: \texttt{mocks}}
+
+Como el backend todavía no tiene endpoints implementados, se creó una capa de datos simulados. Esta capa permite probar las pantallas sin depender de la API.
+
+Se crearon archivos como:
+
+\begin{verbatim}
+machines.mock.js
+reservations.mock.js
+reservationHistory.mock.js
+reports.mock.js
+\end{verbatim}
+
+Estos archivos contienen datos de prueba para:
+
+\begin{itemize}
+    \item Máquinas disponibles.
+    \item Reservas activas del estudiante.
+    \item Historial de reservas.
+    \item Reportes administrativos.
+\end{itemize}
+
+\subsection{Capa de servicios: \texttt{services}}
+
+La carpeta \texttt{services} se dejó preparada para la conexión futura con el backend. La idea es que los componentes y vistas no llamen directamente a Axios, sino que usen servicios especializados.
+
+Ejemplos de servicios que se podrán implementar:
+
+\begin{verbatim}
+authService.js
+machineService.js
+reservationService.js
+reportService.js
+\end{verbatim}
+
+Esto permitirá conectar el frontend con endpoints como:
+
+\begin{verbatim}
+POST /api/auth/login
+POST /api/auth/register
+GET /api/machines
+POST /api/machines
+PATCH /api/machines/:id/status
+GET /api/reservations
+POST /api/reservations
+DELETE /api/reservations/:id
+GET /api/reports
+\end{verbatim}
+
+\subsection{Capa de estado: \texttt{stores}}
+
+La carpeta \texttt{stores} se dejó preparada para manejar estado global con Pinia. En una fase posterior se podrá guardar información como:
+
+\begin{itemize}
+    \item Usuario autenticado.
+    \item Rol del usuario.
+    \item Token de sesión.
+    \item Estado de autenticación.
+\end{itemize}
+
+\section{Pantallas implementadas}
+
+\subsection{Inicio de sesión}
+
+Se implementó la pantalla de inicio de sesión siguiendo el mockup definido en los casos de uso. Esta pantalla permite ingresar documento y contraseña.
+
+Actualmente el login funciona de forma simulada:
+
+\begin{itemize}
+    \item Si el documento ingresado es \texttt{admin}, redirige al panel del administrador.
+    \item Si se ingresa cualquier otro documento, redirige al panel del estudiante.
+\end{itemize}
+
+Cuando el backend tenga endpoint de autenticación, esta lógica se reemplazará por una llamada a \texttt{authService.login()}.
+
+\subsection{Registro de usuario}
+
+Se implementó la pantalla de registro de estudiante con los campos:
+
+\begin{itemize}
+    \item Nombres.
+    \item Apellidos.
+    \item Tipo de documento.
+    \item Número de documento.
+    \item Fecha de nacimiento.
+    \item Sexo.
+    \item Correo institucional.
+    \item Teléfono.
+    \item Frase secreta.
+    \item Contraseña.
+\end{itemize}
+
+Actualmente el registro es simulado. Cuando el backend implemente el endpoint correspondiente, se deberá validar que el documento sea único y guardar el usuario en la base de datos.
+
+\subsection{Panel del estudiante}
+
+Se creó un layout para el estudiante con menú lateral. Desde este panel el estudiante puede acceder a:
+
+\begin{itemize}
+    \item Inicio.
+    \item Reservar máquina.
+    \item Mis reservas.
+\end{itemize}
+
+\subsection{Reservar máquina}
+
+Se implementó la pantalla de reserva de máquinas. Esta vista muestra tarjetas de máquinas activas con:
+
+\begin{itemize}
+    \item Nombre de la máquina.
+    \item ID de la máquina.
+    \item Tipo.
+    \item Estado.
+    \item Selector de franja horaria.
+    \item Botón para confirmar reserva.
+\end{itemize}
+
+Actualmente la reserva se confirma de forma simulada. La pantalla valida que el usuario seleccione una franja horaria antes de confirmar.
+
+\subsection{Mis reservas}
+
+Se implementó la pantalla de reservas activas del estudiante. La vista muestra una lista de reservas con:
+
+\begin{itemize}
+    \item Nombre de la máquina.
+    \item ID de la máquina.
+    \item Día.
+    \item Franja horaria.
+    \item ID de reserva.
+    \item Botón para cancelar.
+\end{itemize}
+
+La cancelación es simulada: al presionar el botón, la reserva se elimina de la lista local y aparece un mensaje de éxito.
+
+\subsection{Panel del administrador}
+
+Se creó un layout para el administrador con menú lateral. Desde este panel el administrador puede acceder a:
+
+\begin{itemize}
+    \item Inicio.
+    \item Registrar máquina.
+    \item Estados de máquinas.
+    \item Historial de reservas.
+    \item Reportes.
+\end{itemize}
+
+\subsection{Registrar máquina}
+
+Se implementó la pantalla para registrar una máquina. El formulario contiene:
+
+\begin{itemize}
+    \item ID de máquina.
+    \item Nombre.
+    \item Estado.
+    \item Tipo.
+    \item Componentes técnicos.
+\end{itemize}
+
+Actualmente el registro es simulado. Cuando exista el endpoint correspondiente, se reemplazará por una llamada a \texttt{machineService.createMachine()}.
+
+\subsection{Estados de máquinas}
+
+Se implementó la pantalla para modificar estados de máquinas. Esta vista muestra una tabla con:
+
+\begin{itemize}
+    \item ID de máquina.
+    \item Nombre.
+    \item Estado actual.
+    \item Selector para nuevo estado.
+\end{itemize}
+
+Los estados disponibles son:
+
+\begin{itemize}
+    \item Activa.
+    \item Inactiva.
+    \item Mantenimiento.
+    \item Reservada.
+\end{itemize}
+
+El cambio de estado es simulado por ahora.
+
+\subsection{Historial de reservas}
+
+Se implementó la pantalla de consulta general de reservas. Esta vista permite filtrar por:
+
+\begin{itemize}
+    \item Estudiante o documento.
+    \item Fecha.
+    \item Estado.
+\end{itemize}
+
+La tabla muestra:
+
+\begin{itemize}
+    \item ID de reserva.
+    \item Estudiante.
+    \item Máquina.
+    \item Fecha.
+    \item Hora.
+    \item Estado.
+\end{itemize}
+
+\subsection{Reportes administrativos}
+
+Se implementó la pantalla de reportes administrativos. Esta vista permite seleccionar:
+
+\begin{itemize}
+    \item Tipo de reporte.
+    \item Fecha de inicio.
+    \item Fecha final.
+\end{itemize}
+
+Además, muestra una tabla con:
+
+\begin{itemize}
+    \item ID de máquina.
+    \item Nombre.
+    \item Total de reservas.
+\end{itemize}
+
+El botón \textit{Exportar PDF} funciona de forma simulada y queda preparado para una futura integración.
+
+\section{Relación con los casos de uso}
+
+Las pantallas implementadas se relacionan directamente con los casos de uso del sistema:
+
+\begin{longtable}{|p{4cm}|p{4cm}|p{6cm}|}
+\hline
+\textbf{Caso de uso} & \textbf{Pantalla implementada} & \textbf{Descripción} \\
+\hline
+Registrar usuario & Registro de usuario & Permite al estudiante crear una cuenta en el sistema. \\
+\hline
+Iniciar sesión & Login & Permite ingresar al sistema según el rol. \\
+\hline
+Reservar máquina & Reservar máquina & Permite seleccionar máquina y franja horaria. \\
+\hline
+Cancelar reserva & Mis reservas & Permite cancelar reservas activas. \\
+\hline
+Registrar máquina & Registrar máquina & Permite al administrador crear máquinas. \\
+\hline
+Modificar estado de máquina & Estados de máquinas & Permite cambiar el estado de disponibilidad de una máquina. \\
+\hline
+Consultar historial & Historial de reservas & Permite consultar reservas pasadas y presentes. \\
+\hline
+Generar reportes & Reportes administrativos & Permite visualizar estadísticas de uso. \\
+\hline
+\end{longtable}
+
+\section{Decisiones importantes}
+
+\subsection{Uso de datos simulados}
+
+Se decidió usar datos simulados porque el backend todavía no cuenta con endpoints implementados. Esto permite avanzar en el frontend sin bloquear el desarrollo.
+
+Cuando los endpoints existan, solo será necesario reemplazar los mocks por servicios reales.
+
+\subsection{Separación de responsabilidades}
+
+Se evitó colocar toda la lógica en las vistas. En cambio, se separó en:
+
+\begin{itemize}
+    \item Vistas para organizar pantallas.
+    \item Componentes para reutilizar interfaz.
+    \item Mocks para datos temporales.
+    \item Servicios para futura conexión con backend.
+    \item Layouts para estructura visual común.
+\end{itemize}
+
+\subsection{Trabajo en rama independiente}
+
+Se trabajó en una rama separada para evitar afectar la rama principal. Esto permite revisar los cambios antes de hacer merge.
+
+\section{Comandos principales utilizados}
+
+\begin{verbatim}
+git clone https://github.com/No-pain-No-main/project-frontend.git
+cd project-frontend
+git checkout -b feature/frontend-architecture
+npm create vite@latest . -- --template vue
+npm install
+npm install vue-router@4 axios pinia
+npm run dev
+git add .
+git commit -m "mensaje del commit"
+\end{verbatim}
+
+\section{Estado actual del proyecto}
+
+Actualmente el frontend cuenta con las pantallas principales del sistema implementadas y funcionando con datos simulados.
+
+El sistema permite navegar entre vistas de estudiante y administrador, probar formularios, validar entradas básicas y simular acciones como reservas, cancelaciones, cambios de estado y generación de reportes.
+
+\section{Trabajo pendiente}
+
+Queda pendiente:
+
+\begin{itemize}
+    \item Crear servicios reales para consumir la API del backend.
+    \item Definir e implementar endpoints en el backend.
+    \item Conectar login y registro con la base de datos.
+    \item Conectar reservas con disponibilidad real.
+    \item Persistir cancelaciones y cambios de estado.
+    \item Generar reportes reales desde datos almacenados.
+    \item Implementar autenticación real por rol.
+    \item Proteger rutas según el tipo de usuario.
+\end{itemize}
+
+\section{Conclusión}
+
+Se reconstruyó el frontend del sistema usando Vue.js y una arquitectura por capas clara. El proyecto quedó organizado, funcional y preparado para integrarse con el backend cuando los endpoints estén disponibles.
+
+El uso de mocks permitió validar el diseño de las pantallas y el flujo general del sistema sin depender todavía de la API. Además, la división en componentes, vistas, layouts, rutas y datos simulados facilita el mantenimiento y la futura expansión del proyecto.
+
+\end{document}
