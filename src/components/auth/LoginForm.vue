@@ -1,132 +1,103 @@
-﻿<template>
-  <form class="login-form" @submit.prevent="handleSubmit">
-    <div class="form-header">
-      <h1>Bienvenido</h1>
-      <p>Gimnasio UNAL - Sede Bogotá</p>
+<template>
+  <section class="auth-page">
+    <div class="auth-card">
+      <div class="auth-card__brand">
+        <img src="/logo.png" alt="FitBook" />
+        <div>
+          <p class="section-kicker">FitBook</p>
+          <strong>Gimnasio UNAL</strong>
+        </div>
+      </div>
+
+      <h2>Inicia sesión</h2>
+      <p class="muted-text">Accede con tu correo institucional para gestionar tus reservas.</p>
+
+      <p v-if="auth.error" class="form-error">{{ auth.error }}</p>
+
+      <form class="auth-form" @submit.prevent="handleSubmit">
+        <div class="form-field">
+          <label for="email">Correo electrónico</label>
+          <input
+            id="email"
+            v-model="form.email"
+            type="email"
+            required
+            autocomplete="email"
+            placeholder="tu.correo@unal.edu.co"
+          />
+        </div>
+
+        <div class="form-field">
+          <label for="password">Contraseña</label>
+          <input
+            id="password"
+            v-model="form.password"
+            type="password"
+            required
+            autocomplete="current-password"
+            placeholder="••••••••"
+          />
+        </div>
+
+        <button class="primary-button" type="submit" :disabled="auth.loading">
+          <font-awesome-icon :icon="['fas', 'arrow-right-to-bracket']" />
+          {{ auth.loading ? 'Ingresando...' : 'Ingresar' }}
+        </button>
+      </form>
+
+      <!--
+        Acceso rápido SOLO en desarrollo local (npm run dev). No existe en
+        el build de producción: import.meta.env.DEV se evalúa en build time
+        y Vite elimina este bloque del bundle final.
+        Sirve para navegar por todas las vistas protegidas mientras el
+        backend todavía no tiene los endpoints de auth listos.
+      -->
+      <div v-if="isDev" class="dev-shortcut">
+        <p class="muted-text">Modo desarrollo — entrar sin backend:</p>
+        <div class="dev-shortcut__actions">
+          <button class="ghost-button" type="button" @click="handleDemoLogin('estudiante')">
+            Demo estudiante
+          </button>
+          <button class="ghost-button" type="button" @click="handleDemoLogin('admin')">
+            Demo administrador
+          </button>
+        </div>
+      </div>
+
+      <p class="auth-card__footer">
+        ¿No tienes cuenta? <RouterLink to="/register">Regístrate</RouterLink>
+      </p>
     </div>
-
-    <AppInput
-      id="documento"
-      v-model="form.documento"
-      label="Número de Documento"
-      placeholder="Ingrese su documento"
-      required
-    />
-
-    <AppInput
-      id="password"
-      v-model="form.password"
-      label="Contraseña"
-      type="password"
-      placeholder="********"
-      required
-    />
-
-    <p v-if="errorMessage" class="error-message">
-      {{ errorMessage }}
-    </p>
-
-    <AppButton type="submit" :disabled="loading">
-      {{ loading ? 'Ingresando...' : 'Ingresar al Sistema' }}
-    </AppButton>
-
-    <p class="register-text">
-      ¿No tienes cuenta?
-      <RouterLink to="/register">Regístrate aquí</RouterLink>
-    </p>
-  </form>
+  </section>
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import AppInput from '../common/AppInput.vue'
-import AppButton from '../common/AppButton.vue'
+import { reactive } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useAuthStore } from '../../stores/auth'
 
+const auth = useAuthStore()
 const router = useRouter()
+const route = useRoute()
+const isDev = import.meta.env.DEV
 
 const form = reactive({
-  documento: '',
-  password: ''
+  email: '',
+  password: '',
 })
 
-const loading = ref(false)
-const errorMessage = ref('')
+function redirectAfterLogin() {
+  const redirectTo = route.query.redirect || (auth.isAdmin ? '/admin' : '/student/dashboard')
+  router.push(redirectTo)
+}
 
-function handleSubmit() {
-  errorMessage.value = ''
-  loading.value = true
+async function handleSubmit() {
+  const success = await auth.login(form)
+  if (success) redirectAfterLogin()
+}
 
-  setTimeout(() => {
-    loading.value = false
-
-    if (!form.documento || !form.password) {
-      errorMessage.value = 'Debe ingresar documento y contraseña.'
-      return
-    }
-
-    /*
-      TODO:
-      Cuando el backend tenga endpoint de login,
-      aquí se reemplaza la simulación por authService.login().
-    */
-
-    if (form.documento === 'admin') {
-      router.push('/admin')
-    } else {
-      router.push('/student')
-    }
-  }, 600)
+function handleDemoLogin(role) {
+  auth.loginAsDemo(role)
+  redirectAfterLogin()
 }
 </script>
-
-<style scoped>
-.login-form {
-  width: 100%;
-  max-width: 390px;
-  background-color: white;
-  padding: 36px;
-  border-radius: 8px;
-  box-shadow: 0 8px 26px rgba(15, 23, 42, 0.16);
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  border-top: 5px solid #142033;
-}
-
-.form-header {
-  text-align: center;
-  margin-bottom: 8px;
-}
-
-.form-header h1 {
-  margin: 0;
-  font-size: 28px;
-  color: #142033;
-}
-
-.form-header p {
-  margin: 8px 0 0;
-  color: #6b7280;
-  font-size: 14px;
-}
-
-.error-message {
-  background-color: #fee2e2;
-  color: #b91c1c;
-  padding: 12px;
-  border-radius: 6px;
-  font-size: 14px;
-}
-
-.register-text {
-  text-align: center;
-  color: #6b7280;
-  font-size: 14px;
-}
-
-.register-text a {
-  color: #142033;
-  font-weight: 700;
-}
-</style>
