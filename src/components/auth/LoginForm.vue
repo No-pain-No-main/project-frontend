@@ -44,14 +44,7 @@
           {{ auth.loading ? 'Ingresando...' : 'Ingresar' }}
         </button>
       </form>
-
-      <!--
-        Acceso rápido SOLO en desarrollo local (npm run dev). No existe en
-        el build de producción: import.meta.env.DEV se evalúa en build time
-        y Vite elimina este bloque del bundle final.
-        Sirve para navegar por todas las vistas protegidas mientras el
-        backend todavía no tiene los endpoints de auth listos.
-      -->
+      
       <div v-if="isDev" class="dev-shortcut">
         <p class="muted-text">Modo desarrollo — entrar sin backend:</p>
         <div class="dev-shortcut__actions">

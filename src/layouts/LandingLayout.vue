@@ -19,28 +19,10 @@
       <RouterView />
     </main>
 
-    <footer class="landing-footer">
-      <div class="landing-footer__brand">
-        <img src="/logo.png" alt="FitBook" />
-        <div>
-          <strong>FitBook</strong>
-          <p>Gestión de reservas del gimnasio UNAL sede Bogotá.</p>
-        </div>
-      </div>
-
-      <nav class="landing-footer__links" aria-label="Enlaces">
-        <RouterLink to="/login">Iniciar sesión</RouterLink>
-        <RouterLink to="/register">Registrarse</RouterLink>
-        <a href="mailto:nopainnomain@unal.edu.co">Contacto</a>
-      </nav>
-
-      <p class="landing-footer__legal">
-        © {{ currentYear }} No pain - No main() · Universidad Nacional de Colombia
-      </p>
-    </footer>
+    <Footer />
   </div>
 </template>
 
 <script setup>
-const currentYear = new Date().getFullYear()
+import Footer from '../components/layout/Footer.vue'
 </script>
