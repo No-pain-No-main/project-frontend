@@ -1,65 +1,42 @@
-# Reglas — Layouts (`layouts/`)
+# Reglas — Layouts
 
-Los layouts son las "cáscaras" de la aplicación: `AuthLayout.vue`, `StudentLayout.vue`,
-`AdminLayout.vue`. Su única responsabilidad es estructura visual global.
+Este documento describe las reglas para la capa de layouts del proyecto.
+
+## Objetivo
+
+Mantener una estructura visual clara y consistente, separando la presentación global de la lógica de negocio.
 
 ---
 
-## MUST
+## Reglas obligatorias
 
-### L-M1 — Solo estructura, nunca lógica de negocio
-**Regla:** Los layouts no pueden contener formularios, llamadas a servicios, lógica de creación
-o edición de datos de dominio (citas, administradores, pacientes, etc.). Solo deben contener
-elementos estructurales: navbar, sidebar, footer, y un `<router-view />`.
+### L-M1 — Los layouts solo deben definir estructura
+Los layouts deben encargarse de la estructura visual general: barra de navegación, sidebar, footer y contenedor principal. No deben contener lógica de negocio ni formularios.
 
 ```vue
-<!-- ❌ Incorrecto — lógica de negocio en layout -->
-<script setup>
-import { createAppointment } from '@/services/appointmentService'
-async function submit() { await createAppointment(form) }
-</script>
-
-<!-- ✅ Correcto — solo estructura -->
+<!-- Correcto -->
 <template>
-  <nav><!-- navbar --></nav>
+  <nav>Navbar</nav>
   <main><router-view /></main>
-  <footer><!-- footer --></footer>
+  <footer>Footer</footer>
 </template>
 ```
 
-### L-M2 — `<router-view />` obligatorio
-**Regla:** Todo layout debe renderizar `<router-view />` exactamente una vez como punto de
-inyección de las vistas hijas. Sin él, las vistas no se renderizan aunque el router funcione.
+### L-M2 — Deben renderizar `<router-view />`
+Todo layout debe incluir un `<router-view />` para permitir que las vistas hijas se rendericen correctamente.
 
-### L-M3 — Sin llamadas Axios directas
-**Regla:** Ningún layout puede importar `axios` ni hacer llamadas HTTP directas. Si el layout
-necesita datos de sesión (ej. nombre del usuario en la navbar), los lee desde un store de Pinia.
+### L-M3 — No usar Axios en layouts
+Los layouts no deben hacer peticiones HTTP directas. Si necesitan datos de sesión, deben obtenerlos desde un store.
 
-```vue
-<!-- ✅ Correcto — leer sesión desde store, no desde HTTP -->
-<script setup>
-import { useAuthStore } from '@/stores/authStore'
-const auth = useAuthStore()
-</script>
-<template>
-  <nav>Hola, {{ auth.user?.name }}</nav>
-  <router-view />
-</template>
-```
-
-### L-M4 — No mutar estado de Pinia directamente
-**Regla:** Si el layout necesita interactuar con el store (ej. botón de logout), debe llamar
-una `action`, no mutar la propiedad directamente. Misma regla que VC-M2.
+### L-M4 — No mutar stores directamente
+Si un layout necesita interactuar con un store, debe hacerlo mediante acciones del mismo.
 
 ---
 
-## SHOULD
+## Recomendaciones
 
-### L-S1 — Un layout por rol, sin condicionales de rol dentro
-Si hay lógica `v-if="user.role === 'admin'"` para secciones enteras de navegación dentro de
-un mismo layout, considera si debería ser un layout separado. Los condicionales menores
-(ej. un ítem de menú) son aceptables.
+### L-S1 — Un layout por rol
+Es recomendable mantener un layout distinto para autenticación, estudiante y administrador para evitar condicionales complejos.
 
-### L-S2 — Slots nombrados para zonas opcionales
-Si el layout tiene zonas opcionales (ej. un panel lateral que algunas vistas no usan),
-preferir `<slot name="sidebar" />` sobre condicionales que detecten qué vista está activa.
+### L-S2 — Usar slots cuando sean necesarios
+Si algunas vistas requieren zonas visuales opcionales, se pueden usar slots en lugar de condicionales excesivos.

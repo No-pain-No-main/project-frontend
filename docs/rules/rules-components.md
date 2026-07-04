@@ -1,51 +1,44 @@
-# Reglas — Capa de Componentes (`components/`)
+# Reglas — Componentes
 
-Los componentes son elementos de UI puros y reutilizables: botones, tarjetas, modales, inputs personalizados. No tienen estado global ni lógica de negocio propia.
+Este documento define las buenas prácticas para la carpeta de componentes del proyecto.
+
+## Objetivo
+
+Mantener los componentes reutilizables, puros y fáciles de probar, evitando que acumulen lógica de negocio innecesaria.
 
 ---
 
-## MUST (bloqueantes)
+## Reglas obligatorias
 
-### C-M1 — Sin llamadas HTTP directas
-**Regla:** Los componentes no pueden importar `axios` ni llamar a servicios HTTP. Reciben datos via `props` y emiten eventos al padre con `emit`. La lógica de fetching pertenece a las vistas.
+### C-M1 — No hacer llamadas HTTP directas
+Los componentes no deben importar Axios ni realizar peticiones directamente al backend. Deben recibir datos por props y delegar la lógica a las vistas o servicios.
 
-```vue
-<!-- ❌ Incorrecto -->
-<script setup>
-import axios from 'axios'
-const result = await axios.post('/api/appointments', props.data)
-</script>
-
-<!-- ✅ Correcto — delegar al padre via emit -->
-<script setup>
-const emit = defineEmits(['submit'])
-const handleSubmit = (data) => emit('submit', data)
-</script>
-```
-
-### C-M2 — Sin acceso directo a stores de Pinia (regla general)
-**Regla:** Los componentes puros de UI no deberían acceder a stores de Pinia directamente. Deben recibir sus datos por `props`. Excepción justificada: componentes de alto nivel que son más "contenedores" que "presentacionales" (documentar la excepción con un comentario).
+### C-M2 — Sin acceso directo a stores de Pinia
+Los componentes de UI puros no deberían consultar stores directamente. Deben recibir datos por props o eventos.
 
 ### C-M3 — Declarar props y emits explícitamente
-**Regla:** Todo componente debe declarar sus `defineProps` y `defineEmits` de forma explícita con tipos. Sin esta declaración, el contrato del componente es opaco.
+Todo componente debe definir claramente sus props y emits.
 
 ```vue
-<!-- ✅ Correcto -->
 <script setup>
 defineProps({
   title: { type: String, required: true },
   isLoading: { type: Boolean, default: false }
 })
+
 defineEmits(['confirm', 'cancel'])
 </script>
 ```
 
 ---
 
-## SHOULD (recomendaciones)
+## Recomendaciones
 
 ### C-S1 — Un componente, una responsabilidad
-Si un componente renderiza más de una "unidad visual" claramente diferenciada (ej. un formulario Y una tabla de resultados), considerar dividirlo en dos componentes separados.
+Cada componente debe enfocarse en una sola unidad visual o funcional.
 
-### C-S2 — Nombres descriptivos en PascalCase
-Los componentes deben nombrarse en PascalCase y con nombres que expresen su función: `AppointmentCard.vue`, no `Card.vue`. Facilita la búsqueda y el debug.
+### C-S2 — Nombres descriptivos
+Los nombres deben ser claros y expresar la tarea del componente, por ejemplo `ReservationCard` o `MachineForm`.
+
+### C-S3 — Mantener el template simple
+La lógica compleja debe moverse a funciones o computed, dejando el template declarativo y fácil de leer.

@@ -1,21 +1,8 @@
-﻿<template>
-  <main class="auth-layout">
-    <section class="auth-content">
-      <RouterView />
-    </section>
-  </main>
+<template>
+  <!--
+    Layout deliberadamente vacío: sin Sidebar ni Navbar.
+    Login y Register no deben mostrar el menú de navegación de la app,
+    porque el usuario todavía no tiene sesión.
+  -->
+  <RouterView />
 </template>
-
-<script setup>
-</script>
-
-<style scoped>
-.auth-layout {
-  min-height: 100vh;
-  background-color: #f4f6f8;
-}
-
-.auth-content {
-  min-height: 100vh;
-}
-</style>
