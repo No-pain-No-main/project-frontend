@@ -82,23 +82,17 @@ Instala las dependencias:
 ```bash
 npm install
 ```
-
-Ejecuta el proyecto en modo desarrollo:
-
-```bash
-npm run dev
-```
-
 Construye la aplicación para producción:
 
 ```bash
 npm run build
 ```
 
-Previsualiza el build generado:
+
+Ejecuta el proyecto en modo desarrollo:
 
 ```bash
-npm run preview
+npm run dev
 ```
 
 > Se recomienda usar una versión reciente de Node, ya que el proyecto define soporte para Node 22+.
