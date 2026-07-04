@@ -52,8 +52,6 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  // Al recargar la página, si hay token pero no hay user en memoria confiable,
-  // se puede llamar esto para revalidar la sesión contra el backend.
   async function fetchCurrentUser() {
     if (!token.value) return
     try {
@@ -65,16 +63,12 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  // ── SOLO DESARROLLO ───────────────────────────────────────────────────
-  // Simula una sesión localmente, sin llamar al backend. Útil mientras el
-  // backend todavía no expone /auth/login. NO se usa en producción: el
-  // botón que la invoca solo existe cuando import.meta.env.DEV es true.
   function loginAsDemo(demoRole = 'estudiante') {
     persistSession({
       token: 'demo-token',
       user: {
         id: 0,
-        nombre: demoRole === 'admin' ? 'Admin Demo' : 'Estudiante Demo',
+        nombre: demoRole === 'admin' ? 'Administrador Demo' : 'Estudiante Demo',
         email: 'demo@fitbook.local',
         rol: demoRole,
       },

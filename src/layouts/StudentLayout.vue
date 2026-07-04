@@ -1,5 +1,4 @@
 <template>
-  <!-- Solo estructura: Sidebar + Navbar + RouterView. Sin lógica de negocio. -->
   <div class="app-shell">
     <Sidebar />
 

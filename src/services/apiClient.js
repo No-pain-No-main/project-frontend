@@ -1,7 +1,9 @@
 import axios from 'axios'
 
-// La URL base sale de una variable de entorno (ver archivo .env).
-// Así, cuando el backend cambie de puerto/dominio, solo tocas el .env.
+// Aquí va la URL base de la API.
+// Yo la emulé con `VITE_API_URL` en .env; ponga aquí el endpoint real
+// cuando conecte la base de datos 
+
 const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api',
   headers: {
@@ -9,7 +11,6 @@ const apiClient = axios.create({
   },
 })
 
-// Interceptor: agrega el token a cada request automáticamente si existe.
 apiClient.interceptors.request.use((config) => {
   const token = localStorage.getItem('fitbook_token')
   if (token) {
@@ -18,8 +19,6 @@ apiClient.interceptors.request.use((config) => {
   return config
 })
 
-// Interceptor de respuesta: si el backend responde 401 (token vencido/invalido),
-// limpiamos la sesión local. La redirección la maneja el router guard.
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
