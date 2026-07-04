@@ -1,81 +1,99 @@
-# Reglas — Capa de Vistas (`views/`)
+# Reglas — Vistas y componentes
 
-Las vistas son páginas completas agrupadas por dominio (`auth/`, `student/`, `admin/`). Son los contenedores principales de lógica de negocio y formularios.
+Este documento define las reglas de arquitectura y organización para las capas de vistas y componentes del frontend.
+
+## Objetivo
+
+Mantener el proyecto ordenado, consistente y fácil de mantener, separando claramente la lógica de negocio, la presentación y la comunicación con servicios externos.
 
 ---
 
-## MUST (bloqueantes)
+## Reglas generales aplicables a vistas y componentes
 
-### V-M1 — Sin llamadas Axios directas
-**Regla:** Ninguna vista puede importar `axios` directamente ni construir llamadas HTTP con URLs hardcoded. Toda comunicación con el backend debe delegarse a un módulo en `services/` o `api/`.
+### VC-M1 — No usar Axios directamente en vistas ni componentes
+Ningún archivo en las carpetas de vistas o componentes puede importar Axios ni construir URLs de backend directamente. Toda comunicación con el servidor debe delegarse a los servicios del proyecto.
 
 ```vue
-<!-- ❌ Incorrecto en una vista -->
+<!-- Incorrecto -->
 <script setup>
 import axios from 'axios'
 const data = await axios.get('http://localhost:8080/api/administrators')
 </script>
 
-<!-- ✅ Correcto -->
+<!-- Correcto -->
 <script setup>
 import { getAdministrators } from '@/services/administratorService'
 const data = await getAdministrators()
 </script>
 ```
 
-### V-M2 — Estado global solo a través de Pinia
-**Regla:** Si la vista necesita leer o mutar estado que persiste entre rutas (sesión, usuario autenticado, datos compartidos), debe hacerlo exclusivamente a través de las acciones y getters de un store de Pinia. Prohibido mutar propiedades del store directamente desde la vista.
+### VC-M2 — No mutar stores directamente
+Los componentes y vistas no deben modificar propiedades de un store de Pinia directamente. Toda modificación debe realizarse mediante las acciones del store.
 
-```vue
-<!-- ❌ Incorrecto — mutación directa del store -->
-<script setup>
-import { useAuthStore } from '@/stores/authStore'
-const auth = useAuthStore()
-auth.user = { name: 'Juan' } // mutación directa
-</script>
+```js
+// Incorrecto
+const authStore = useAuthStore()
+authStore.user = responseData
 
-<!-- ✅ Correcto — a través de una action -->
-<script setup>
-import { useAuthStore } from '@/stores/authStore'
-const auth = useAuthStore()
-auth.setUser({ name: 'Juan' }) // action del store
-</script>
+// Correcto
+authStore.setUser(responseData)
 ```
 
-### V-M3 — Las vistas no contienen elementos estructurales de navegación
-**Regla:** Navbars, sidebars, footers y menús de navegación global no pertenecen a las vistas. Si una vista renderiza estos elementos directamente (fuera de un `<router-view>`), es una violación. Esos elementos deben estar en `layouts/`.
+### VC-M3 — Usar Composition API con `<script setup>`
+Todo componente nuevo debe desarrollarse con la Composition API y `<script setup>`.
 
-### V-M4 — Dominio correcto por subdirectorio
-**Regla:** Una vista en `views/admin/` no puede ser accedida ni lógicamente pertenecer al flujo de `student/`, y viceversa. Si la vista contiene lógica mezclada de roles, debe dividirse.
+```vue
+<script setup>
+import { ref } from 'vue'
+
+const name = ref('')
+
+function submit() {}
+</script>
+```
 
 ---
 
-## SHOULD (recomendaciones)
+## Reglas específicas para vistas
 
-### V-S1 — Composition API con `<script setup>`
-Preferir `<script setup>` (Composition API) sobre Options API (`export default { data(), methods: {} }`). Es el estándar de Vue 3 y produce componentes más legibles y testeables.
+### V-M1 — Las vistas son páginas completas
+Los archivos ubicados en la carpeta de vistas representan pantallas completas cargadas por el router. No deben usarse como componentes internos de otra vista.
 
-### V-S2 — Manejo explícito de estados de carga y error
-Las vistas que consumen servicios deben manejar tres estados: cargando, éxito, error. Usar refs reactivas (`isLoading`, `error`) para reflejar esto en el template.
+Si una parte de la interfaz se reutiliza, debe extraerse a la carpeta de componentes.
+
+### V-M2 — La lógica de negocio pertenece a las vistas
+Formularios, llamadas a servicios y acciones del dominio deben ubicarse en las vistas, no en los layouts.
+
+---
+
+## Reglas específicas para componentes
+
+### C-M1 — Componentes con responsabilidad visual
+Los componentes deben ser lo más puros posible. No deben poseer lógica de negocio compleja ni manejar directamente datos globales.
+
+### C-M2 — Comunicación por props y emits
+Los componentes deben recibir datos mediante props y comunicar eventos al componente padre con emits.
 
 ```vue
-<!-- ✅ Recomendado -->
 <script setup>
-const isLoading = ref(false)
-const error = ref(null)
+defineProps({
+  label: { type: String, required: true },
+  isLoading: { type: Boolean, default: false }
+})
 
-async function loadData() {
-  isLoading.value = true
-  try {
-    data.value = await getAdministrators()
-  } catch (e) {
-    error.value = e.message
-  } finally {
-    isLoading.value = false
-  }
-}
+defineEmits(['confirm', 'cancel'])
 </script>
 ```
 
-### V-S3 — No lógica de presentación compleja en el template
-Si el template tiene expresiones JavaScript largas o condiciones anidadas complejas, extraerlas a `computed` properties para mantener el template limpio.
+---
+
+## Recomendaciones
+
+### VC-S1 — Manejar estados de carga y error
+Cuando una vista o componente realice una petición asíncrona, debe mostrar explícitamente estados de carga, error o vacío.
+
+### VC-S2 — Evitar lógica compleja en el template
+Si una condición o cálculo se vuelve muy complejo, debe extraerse a una computed o función.
+
+### VC-S3 — Nombres descriptivos
+Los componentes deben nombrarse de forma clara y descriptiva, preferiblemente en PascalCase.

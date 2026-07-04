@@ -1,109 +1,97 @@
-# Reglas — Stores Pinia (`stores/`) y Servicios HTTP (`services/` o `api/`)
+# Reglas — Stores Pinia y servicios HTTP
+
+Este documento establece las reglas para el manejo del estado global y la comunicación con el backend.
+
+## Objetivo
+
+Asegurar que la lógica de negocio y la integración con servicios externos estén bien organizadas, evitando acoplamientos innecesarios entre capas.
 
 ---
 
-## STORES PINIA
+## Stores Pinia
 
-### ST-M1 — Definir con `defineStore`, nunca con objeto reactivo manual
-**Regla:** El estado global debe definirse exclusivamente con `defineStore` de Pinia. No usar
-`reactive({})` o `ref()` exportados directamente desde un módulo como sustituto de store.
+### ST-M1 — Definir stores con `defineStore`
+El estado global debe manejarse exclusivamente mediante stores de Pinia. No se deben usar objetos reactivos manuales como sustituto de un store.
 
-```javascript
-// ❌ Incorrecto — estado global manual
+```js
+// Incorrecto
 export const authState = reactive({ user: null })
 
-// ✅ Correcto — store de Pinia
+// Correcto
 export const useAuthStore = defineStore('auth', {
   state: () => ({ user: null }),
   actions: {
-    setUser(user) { this.user = user }
+    setUser(user) {
+      this.user = user
+    }
   }
 })
 ```
 
-### ST-M2 — Mutaciones solo en `actions`
-**Regla:** El estado del store solo puede modificarse dentro de sus propias `actions`. Los
-componentes que usen el store no pueden asignar directamente a sus propiedades.
-(Esta regla es espejo de VC-M2 — si se detecta la violación en un `.vue`, reportar allí;
-si se detecta en el store mismo, reportar aquí.)
+### ST-M2 — Las mutaciones solo deben hacerse dentro de actions
+Los componentes y vistas no deben modificar directamente el estado del store. Deben invocar acciones del store.
 
-### ST-M3 — Los stores no importan directamente desde `views/` ni `components/`
-**Regla:** El flujo de dependencias es unidireccional: `views/components → stores → services`.
-Un store no puede importar ni instanciar componentes Vue. Puede llamar a servicios HTTP.
+### ST-M3 — Los stores no deben importar vistas ni componentes
+La relación de dependencias debe ser unidireccional: vistas y componentes consumen stores, y los stores consumen servicios.
 
-### ST-M4 — Sin lógica de presentación en el store
-**Regla:** Los stores no manejan mensajes de UI, clases CSS, ni lógica de visibilidad de
-elementos. Esa responsabilidad es de los componentes/vistas. El store solo gestiona estado
-de datos y acciones de negocio del cliente.
+### ST-M4 — Los stores no deben manejar presentación visual
+Los stores no deben controlar mensajes visuales, clases CSS ni visibilidad de UI. Eso corresponde a las vistas o componentes.
 
 ---
 
-## SHOULD — Stores
+## Recomendaciones para stores
 
-### ST-S1 — Getters para datos derivados
-Si hay lógica calculada a partir del estado (ej. `isAuthenticated = user !== null`), usar
-`getters` en lugar de calcularla en cada componente.
+### ST-S1 — Usar getters para datos derivados
+Si un valor se calcula a partir del estado, conviene definirlo como getter.
 
-```javascript
+```js
 getters: {
   isAuthenticated: (state) => state.user !== null
 }
 ```
 
-### ST-S2 — Nombre del store descriptivo y en camelCase
-El ID del store (`defineStore('auth', ...)`) debe ser descriptivo y único. Evitar nombres
-genéricos como `'store'` o `'data'`.
+### ST-S2 — Usar nombres descriptivos
+Los stores deben tener identificadores claros y únicos, como `auth`, `reservations` o `machines`.
 
 ---
 
-## SERVICIOS HTTP (`services/` o `api/`)
+## Servicios HTTP
 
-### SV-M1 — Toda llamada Axios centralizada aquí
-**Regla:** Los archivos de `services/` o `api/` son el **único lugar** donde se instancia o
-importa Axios y se construyen URLs del backend. Ninguna otra capa puede hacerlo.
-(Si la violación se detecta en un `.vue`, reportar como VC-M1.)
+### SV-M1 — Toda llamada HTTP debe centralizarse en servicios
+Los archivos ubicados en services o api son el único lugar donde debe existir la lógica de conexión con el backend.
 
-### SV-M2 — Sin lógica de UI en los servicios
-**Regla:** Los servicios no deben manipular el DOM, llamar a `router.push()`, ni modificar
-stores directamente. Retornan datos o lanzan errores; quién los llama decide qué hacer.
+### SV-M2 — Los servicios no deben manejar UI
+Los servicios no deben manipular el DOM, hacer navegación ni modificar stores directamente. Solo deben retornar datos o lanzar errores.
 
-```javascript
-// ❌ Incorrecto — el service decide la navegación
+```js
+// Incorrecto
 async function login(credentials) {
   const res = await axios.post('/auth/login', credentials)
-  router.push('/dashboard') // no le corresponde
+  router.push('/dashboard')
 }
 
-// ✅ Correcto — retorna y el caller decide
+// Correcto
 async function login(credentials) {
   const res = await axios.post('/auth/login', credentials)
   return res.data
 }
 ```
 
-### SV-M3 — URLs relativas o desde variable de entorno, no hardcodeadas con host
-**Regla:** No hardcodear `http://localhost:8080` en los servicios. Usar una instancia de
-Axios con `baseURL` configurada desde `import.meta.env.VITE_API_URL` o similar.
+### SV-M3 — Usar baseURL desde variables de entorno
+No se deben hardcodear URLs completas como `http://localhost:8080` en cada servicio.
 
-```javascript
-// ❌ Incorrecto
-await axios.get('http://localhost:8080/api/administrators')
-
-// ✅ Correcto
-const api = axios.create({ baseURL: import.meta.env.VITE_API_URL })
-await api.get('/administrators')
+```js
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL
+})
 ```
 
 ---
 
-## SHOULD — Servicios
+## Recomendaciones para servicios
 
-### SV-S1 — Instancia de Axios compartida con interceptores
-Preferir una instancia única de Axios (`axios.create(...)`) configurada con interceptores
-para inyectar el token de autenticación y manejar errores 401/403 globalmente, en lugar de
-configurar headers manualmente en cada llamada.
+### SV-S1 — Usar una instancia compartida de Axios
+Es preferible trabajar con una instancia centralizada y reutilizable, con interceptores y manejo de errores.
 
-### SV-S2 — Agrupación por dominio
-Un archivo de servicio por dominio de negocio: `appointmentService.js`,
-`administratorService.js`. Evitar un único `api.js` que concentre todas las llamadas
-de todos los dominios.
+### SV-S2 — Agrupar servicios por dominio
+Cada dominio del negocio puede tener su propio servicio, por ejemplo `authService`, `reservationService` o `machineService`.

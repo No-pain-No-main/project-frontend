@@ -1,67 +1,48 @@
-# Reglas — Enrutador (`router/`)
+# Reglas — Enrutador
 
-El router orquesta los tres flujos: `/` (Auth), `/student`, `/admin`.
+Este documento define las reglas para la configuración de rutas del proyecto.
+
+## Objetivo
+
+Mantener una navegación clara, segura y escalable, separando correctamente las rutas públicas, de estudiante y de administrador.
 
 ---
 
-## MUST
+## Reglas obligatorias
 
-### R-M1 — Lazy loading obligatorio en todas las rutas
-**Regla:** Toda ruta que cargue una vista debe usar importación dinámica. Jamás importar
-vistas estáticamente en el archivo del router.
+### R-M1 — Lazy loading en todas las rutas
+Todas las rutas que carguen vistas deben usar importación dinámica.
 
-```javascript
-// ❌ Incorrecto — import estático, carga todo el bundle al inicio
+```js
+// Incorrecto
 import AdminDashboard from '@/views/admin/AdminDashboard.vue'
-{ path: '/admin/dashboard', component: AdminDashboard }
 
-// ✅ Correcto — lazy loading
+// Correcto
 {
   path: '/admin/dashboard',
   component: () => import('@/views/admin/AdminDashboard.vue')
 }
 ```
 
-### R-M2 — Segregación de rutas por rol
-**Regla:** Las rutas deben organizarse en tres grupos con su layout correspondiente:
-- `/` → `AuthLayout` (login, registro)
-- `/student/*` → `StudentLayout`
-- `/admin/*` → `AdminLayout`
+### R-M2 — Segregación por rol
+Las rutas deben organizarse de forma coherente en los siguientes grupos:
 
-Una vista de estudiante no puede anidarse bajo `/admin` ni viceversa.
+- `/` para autenticación y vistas públicas.
+- `/student/*` para el área del estudiante.
+- `/admin/*` para el área del administrador.
 
-### R-M3 — El router no contiene lógica de negocio
-**Regla:** El archivo del router solo declara rutas y, opcionalmente, navigation guards de
-autenticación/autorización. No debe llamar a servicios HTTP directamente ni contener
-lógica de dominio.
+### R-M3 — El router no debe contener lógica de negocio
+El archivo del router solo debe declarar rutas y guards de autenticación o autorización. No debe hacer llamadas HTTP ni albergar lógica de dominio.
 
 ---
 
-## SHOULD
+## Recomendaciones
 
-### R-S1 — Navigation guards para protección de rutas
-Si el proyecto no tiene un `beforeEach` o guards por ruta (`meta.requiresAuth`), sugerirlo.
-Un usuario no autenticado no debería poder acceder a `/student` o `/admin`. Un estudiante
-no debería poder acceder a `/admin`.
-
-```javascript
-// Patrón sugerido
-router.beforeEach((to, from, next) => {
-  const auth = useAuthStore()
-  if (to.meta.requiresAuth && !auth.isAuthenticated) {
-    next('/login')
-  } else if (to.meta.role && auth.user?.role !== to.meta.role) {
-    next('/unauthorized')
-  } else {
-    next()
-  }
-})
-```
+### R-S1 — Proteger rutas con guards
+Es recomendable agregar guards que impidan el acceso a rutas sensibles si el usuario no está autenticado o no tiene el rol adecuado.
 
 ### R-S2 — Ruta catch-all para 404
-Si no existe `/:pathMatch(.*)*`, sugerirla para evitar pantallas en blanco ante rutas
-inexistentes.
+Se recomienda incluir una ruta de fallback para manejar URLs inexistentes.
 
-### R-S3 — Nombres de ruta (`name`) en todas las rutas
-Usar `name` en cada ruta para poder navegar con `{ name: 'AdminDashboard' }` en lugar de
-strings de path hardcodeados.
+### R-S3 — Usar nombres de ruta
+Es preferible usar `name` en cada ruta para facilitar la navegación y evitar hardcodear paths.
