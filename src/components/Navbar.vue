@@ -65,7 +65,6 @@ const titles = {
   reservations: 'Reservas',
   machines: 'Maquinas',
   'check-in': 'Check-in',
-  about: 'Progreso',
   admin: 'Administracion',
   'admin-machines': 'Gestión de máquinas',
   'admin-users': 'Usuarios',

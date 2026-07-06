@@ -13,11 +13,9 @@ const Dashboard = () => import('../views/Dashboard.vue')
 const Reservations = () => import('../views/Reservations.vue')
 const Machines = () => import('../views/Machines.vue')
 const CheckIn = () => import('../views/CheckIn.vue')
-const About = () => import('../views/About.vue')
 const Admin = () => import('../views/Admin.vue')
 const AdminMachines = () => import('../views/admin/AdminMachines.vue')
 const AdminUsers = () => import('../views/admin/AdminUsers.vue')
-const AdminReservations = () => import('../views/admin/AdminReservations.vue')
 const AdminStats = () => import('../views/admin/AdminStats.vue')
 const Profile = () => import('../views/Profile.vue')
 const NotFound = () => import('../views/NotFound.vue')
@@ -54,7 +52,6 @@ const router = createRouter({
         { path: 'reservas', name: 'reservations', component: Reservations },
         { path: 'maquinas', name: 'machines', component: Machines },
         { path: 'check-in', name: 'check-in', component: CheckIn },
-        { path: 'about', name: 'about', component: About },
       ],
     },
 
@@ -68,7 +65,6 @@ const router = createRouter({
         { path: 'profile', name: 'admin-profile', component: Profile },
         { path: 'maquinas', name: 'admin-machines', component: AdminMachines },
         { path: 'usuarios', name: 'admin-users', component: AdminUsers },
-        { path: 'reservas', name: 'admin-reservas', component: AdminReservations },
         { path: 'estadisticas', name: 'admin-stats', component: AdminStats },
       ],
     },

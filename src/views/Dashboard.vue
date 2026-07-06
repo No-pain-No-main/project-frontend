@@ -20,74 +20,7 @@
       </RouterLink>
     </div>
 
-    <!-- Resumen de reservas activas -->
-    <section class="content-band">
-      <div class="section-heading">
-        <div>
-          <p class="section-kicker">Resumen</p>
-          <h3>Tus reservas</h3>
-        </div>
-      </div>
-
-      <div class="stats-grid">
-        <article class="soft-card">
-          <span class="card-icon blue">
-            <font-awesome-icon :icon="['fas', 'calendar-check']" />
-          </span>
-          <p>Reservas activas</p>
-          <strong>{{ summary.activas }}</strong>
-        </article>
-
-        <article class="soft-card">
-          <span class="card-icon green">
-            <font-awesome-icon :icon="['fas', 'clipboard-check']" />
-          </span>
-          <p>Confirmadas</p>
-          <strong>{{ summary.confirmadas }}</strong>
-        </article>
-
-        <article class="soft-card">
-          <span class="card-icon amber">
-            <font-awesome-icon :icon="['fas', 'chart-line']" />
-          </span>
-          <p>Horas entrenadas (estimado)</p>
-          <strong>{{ summary.horasSemana }}h</strong>
-        </article>
-      </div>
-    </section>
-
-    <!-- Próxima reserva -->
-    <section class="content-band">
-      <div class="section-heading">
-        <div>
-          <p class="section-kicker">Agenda</p>
-          <h3>Próxima reserva</h3>
-        </div>
-        <RouterLink to="/student/reservas" class="ghost-button">Ver todas</RouterLink>
-      </div>
-
-      <article v-if="nextReservation" class="next-reservation">
-        <span class="card-icon blue next-reservation__icon">
-          <font-awesome-icon :icon="['fas', 'dumbbell']" />
-        </span>
-
-        <div class="next-reservation__body">
-          <span class="badge" :class="nextReservation.status === 'activa' ? 'green' : 'blue'">{{ nextReservation.statusLabel }}</span>
-          <h4>{{ nextReservation.machine }}</h4>
-          <p class="muted-text">{{ nextReservation.slot }}</p>
-        </div>
-
-        <div class="next-reservation__actions">
-          <RouterLink to="/student/check-in" class="primary-button">
-            <font-awesome-icon :icon="['fas', 'arrow-right-to-bracket']" />
-            Confirmar asistencia
-          </RouterLink>
-          <button class="ghost-button" type="button" @click="cancelNextReservation">Cancelar</button>
-        </div>
-      </article>
-
-      <p v-else class="muted-text">No tienes reservas próximas. ¡Aparta una máquina cuando quieras!</p>
-    </section>
+    
 
     <!-- Accesos rápidos -->
     <section class="content-band">
@@ -172,7 +105,6 @@ const quickLinks = [
   { label: 'Reservar máquina', to: '/student/maquinas', icon: 'calendar-check', tone: 'blue' },
   { label: 'Mis reservas', to: '/student/reservas', icon: 'clipboard-check', tone: 'green' },
   { label: 'Check-in', to: '/student/check-in', icon: 'arrow-right-to-bracket', tone: 'amber' },
-  { label: 'Mi progreso', to: '/student/about', icon: 'user-graduate', tone: 'blue' },
 ]
 
 const availableMachines = [
@@ -195,7 +127,6 @@ onMounted(() => {
 
 const studentName = computed(() => auth.user?.nombre || 'Estudiante')
 const studentReservations = computed(() => reservationsStore.getStudentReservations(studentId))
-const nextReservation = computed(() => reservationsStore.getActiveReservation(studentId))
 const pastReservations = computed(() => reservationsStore.getPastReservations(studentId))
 const lateMessage = computed(() => {
   const lateItems = reservationsStore.lateAlerts(studentId)

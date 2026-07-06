@@ -29,18 +29,6 @@
         <strong>1.240</strong>
       </article>
     </div>
-
-    <div class="admin-stats-summary">
-      <article class="stat-summary-card">
-        <h4>Uso de máquinas</h4>
-        <p>La ocupación promedio de máquinas esta semana es del 78%, con un aumento del 14% frente a la semana anterior.</p>
-      </article>
-      <article class="stat-summary-card">
-        <h4>Balance de reservas</h4>
-        <p>Las reservas en horas pico (17:00-20:00) representan el 42% del total. El sistema está listo para manejar la demanda.</p>
-      </article>
-    </div>
-
     <section class="admin-stats-users">
       <div class="section-heading">
         <div>
@@ -125,8 +113,7 @@ const isOpen = (id) => openUsers.value.includes(id)
 .card-icon.green { background:#10b981; }
 .card-icon.amber { background:#f59e0b; }
 .card-icon.purple { background:#8b5cf6; }
-.stat-summary-card { background:#fff; border-radius:24px; padding:24px; border:1px solid rgba(15,23,42,0.06); box-shadow: 0 18px 36px rgba(15,23,42,0.05); margin-top:18px; }
-.stat-summary-card h4 { margin-bottom: 10px; }
+
 @media (max-width: 900px) {
   .admin-stats-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
 }
