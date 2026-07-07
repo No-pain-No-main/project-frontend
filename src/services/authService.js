@@ -1,25 +1,22 @@
 import apiClient from './apiClient'
 
-export async function login({ documentNumber, password }) {
-  // Intentar login como estudiante primero
-  try {
-    const { data } = await apiClient.post('/auth/student/login', { documentNumber, password })
-    return buildSession(data, 'student')
-  } catch {
-    // Si falla, intentar como administrador
-    const { data } = await apiClient.post('/auth/admin/login', { documentNumber, password })
-    return buildSession(data, 'admin')
-  }
+export async function login({ documentNumber, password, role = 'estudiante' }) {
+  const selectedRole = role === 'admin' ? 'admin' : 'estudiante'
+  const endpoint = selectedRole === 'admin' ? '/auth/admin/login' : '/auth/student/login'
+  const { data } = await apiClient.post(endpoint, { documentNumber, password })
+  return buildSession(data, selectedRole)
 }
 
 function buildSession(data, defaultRole) {
+  const normalizedRole = defaultRole === 'admin' ? 'admin' : 'estudiante'
+
   return {
     token: data.token,
     user: {
       id: data.documentNumber,
       nombre: `${data.firstName || ''} ${data.lastName || ''}`.trim(),
       email: data.email || '',
-      rol: data.role ? data.role.toLowerCase() : defaultRole,
+      rol: data.role ? data.role.toLowerCase() : normalizedRole,
       documentNumber: data.documentNumber,
     },
   }

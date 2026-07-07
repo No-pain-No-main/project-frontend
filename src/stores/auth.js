@@ -31,7 +31,7 @@ export const useAuthStore = defineStore('auth', () => {
       return true
     } catch (err) {
       if (import.meta.env.DEV) {
-        loginAsDemo(credentials.documentNumber?.toString().includes('admin') ? 'admin' : 'estudiante')
+        loginAsDemo(credentials.role === 'admin' ? 'admin' : 'estudiante')
         return true
       }
 

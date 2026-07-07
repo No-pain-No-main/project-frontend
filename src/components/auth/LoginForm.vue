@@ -12,11 +12,32 @@
       </div>
 
       <h2>Inicia sesión</h2>
-      <p class="muted-text">Accede con tu correo institucional para gestionar tus reservas.</p>
+      <p class="muted-text">Selecciona tu tipo de acceso para entrar a la plataforma.</p>
 
       <p v-if="auth.error" class="form-error">{{ auth.error }}</p>
 
       <form class="auth-form" @submit.prevent="handleSubmit">
+        <div class="role-selector" role="group" aria-label="Tipo de acceso">
+          <button
+            type="button"
+            class="role-option"
+            :class="{ active: form.role === 'estudiante' }"
+            @click="form.role = 'estudiante'"
+          >
+            <span class="role-title">Estudiante</span>
+            <span class="role-description">Reservas y seguimiento</span>
+          </button>
+          <button
+            type="button"
+            class="role-option"
+            :class="{ active: form.role === 'admin' }"
+            @click="form.role = 'admin'"
+          >
+            <span class="role-title">Administrador</span>
+            <span class="role-description">Gestión de usuarios y máquinas</span>
+          </button>
+        </div>
+
         <div class="form-field">
           <label for="documentNumber">Número de documento</label>
           <input
@@ -79,6 +100,7 @@ const isDev = import.meta.env.DEV
 const form = reactive({
   documentNumber: '',
   password: '',
+  role: 'estudiante',
 })
 
 function redirectAfterLogin() {
@@ -87,7 +109,7 @@ function redirectAfterLogin() {
 }
 
 async function handleSubmit() {
-  const success = await auth.login(form)
+  const success = await auth.login({ ...form })
   if (success) redirectAfterLogin()
 }
 
@@ -110,5 +132,41 @@ function handleDemoLogin(role) {
 
 .back-link:hover {
   text-decoration: underline;
+}
+
+.role-selector {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.role-option {
+  border: 1px solid #dce4f0;
+  border-radius: 12px;
+  padding: 12px;
+  background: #f8fbff;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.role-option.active {
+  border-color: var(--blue);
+  background: #eaf4ff;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
+}
+
+.role-title {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.role-description {
+  display: block;
+  font-size: 0.85rem;
+  color: #5b6b82;
 }
 </style>
