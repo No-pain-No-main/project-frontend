@@ -62,12 +62,6 @@
           label="Maquinas"
           @navigate="closeMobileSidebar"
         />
-        <SidebarLink
-          to="/student/check-in"
-          :icon="['fas', 'clipboard-check']"
-          label="Check-in"
-          @navigate="closeMobileSidebar"
-        />
       </template>
     </nav>
 

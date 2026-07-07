@@ -82,7 +82,7 @@
             <p class="muted-text">{{ r.slot }} · {{ r.statusLabel }}</p>
           </div>
           <div class="history-meta">
-            <p v-if="r.acceptedAt" class="muted-text">Aceptada: {{ new Date(r.acceptedAt).toLocaleDateString('es-CO') }}</p>
+            <p v-if="r.acceptedAt" class="muted-text">Actualizada: {{ new Date(r.acceptedAt).toLocaleDateString('es-CO') }}</p>
             <p v-else class="muted-text">Creada: {{ new Date(r.createdAt).toLocaleDateString('es-CO') }}</p>
           </div>
         </article>
@@ -104,7 +104,6 @@ const studentId = auth.user?.id ?? 0
 const quickLinks = [
   { label: 'Reservar máquina', to: '/student/maquinas', icon: 'calendar-check', tone: 'blue' },
   { label: 'Mis reservas', to: '/student/reservas', icon: 'clipboard-check', tone: 'green' },
-  { label: 'Check-in', to: '/student/check-in', icon: 'arrow-right-to-bracket', tone: 'amber' },
 ]
 
 const availableMachines = [

@@ -10,6 +10,7 @@
       </RouterLink>
 
       <nav class="landing-actions">
+        <RouterLink to="/check-in" class="ghost-button">Check-in</RouterLink>
         <RouterLink to="/login" class="ghost-button">Iniciar sesión</RouterLink>
         <RouterLink to="/register" class="primary-button">Registrarse</RouterLink>
       </nav>
@@ -26,3 +27,12 @@
 <script setup>
 import Footer from '../components/layout/Footer.vue'
 </script>
+
+<style scoped>
+.landing-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+</style>

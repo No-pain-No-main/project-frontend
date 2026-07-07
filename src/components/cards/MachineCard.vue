@@ -8,7 +8,6 @@
     <div class="machine-card__body">
       <p class="machine-card__type">{{ machine.typeLabel || machine.type }}</p>
       <h3>{{ machine.name }}</h3>
-      <p v-if="machine.maxTime" class="muted-text">Uso máximo: {{ machine.maxTime }}</p>
     </div>
 
     <!-- Modo estudiante: solo puede consultar y reservar -->

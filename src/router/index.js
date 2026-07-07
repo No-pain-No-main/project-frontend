@@ -27,7 +27,10 @@ const router = createRouter({
     {
       path: '/',
       component: LandingLayout,
-      children: [{ path: '', name: 'home', component: Home }],
+      children: [
+        { path: '', name: 'home', component: Home },
+        { path: 'check-in', name: 'check-in', component: CheckIn },
+      ],
     },
 
     // ── Autenticación ─────────────────────────────────────────────────
@@ -51,7 +54,6 @@ const router = createRouter({
         { path: 'profile', name: 'profile', component: Profile },
         { path: 'reservas', name: 'reservations', component: Reservations },
         { path: 'maquinas', name: 'machines', component: Machines },
-        { path: 'check-in', name: 'check-in', component: CheckIn },
       ],
     },
 
@@ -74,25 +76,22 @@ const router = createRouter({
   ],
 })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, from) => {
   const auth = useAuthStore()
 
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
-    next({ name: 'login', query: { redirect: to.fullPath } })
-    return
+    return { name: 'login', query: { redirect: to.fullPath } }
   }
 
   if (to.meta.role && auth.role !== to.meta.role) {
-    next(auth.isAdmin ? '/admin' : '/student/dashboard')
-    return
+    return auth.isAdmin ? { path: '/admin' } : { path: '/student/dashboard' }
   }
 
   if (to.meta.guestOnly && auth.isAuthenticated) {
-    next(auth.isAdmin ? '/admin' : '/student/dashboard')
-    return
+    return auth.isAdmin ? { path: '/admin' } : { path: '/student/dashboard' }
   }
 
-  next()
+  return true
 })
 
 export default router

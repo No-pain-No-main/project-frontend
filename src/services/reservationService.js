@@ -1,6 +1,7 @@
+import apiClient from './apiClient'
+
 // Aquí construí datos de ejemplo para desarrollar la UI.
-// cuando conecte la DB, remplace estas funciones por calls reales a los endpoints
-// Yo dejé la forma de cada objeto para que pueda mapearla al modelo real.
+// Cuando la base de datos esté lista, estas funciones podrán reemplazarse por llamadas reales.
 
 const reservations = [
   {
@@ -58,10 +59,89 @@ const reservations = [
 
 const delay = (value) => new Promise((resolve) => setTimeout(() => resolve(value), 100))
 
+const slotDefinitions = [
+  { id: 11, name: '06:00 - 06:30', startTime: '06:00:00' },
+  { id: 12, name: '06:30 - 07:00', startTime: '06:30:00' },
+  { id: 13, name: '07:00 - 07:30', startTime: '07:00:00' },
+  { id: 14, name: '07:30 - 08:00', startTime: '07:30:00' },
+  { id: 15, name: '12:00 - 12:30', startTime: '12:00:00' },
+  { id: 16, name: '12:30 - 13:00', startTime: '12:30:00' },
+  { id: 17, name: '17:00 - 17:30', startTime: '17:00:00' },
+  { id: 18, name: '17:30 - 18:00', startTime: '17:30:00' },
+]
+
+const slotMap = new Map(slotDefinitions.map((slot) => [slot.name, slot]))
+
+function normalizeMachine(machine) {
+  const statusName = machine.machineStatus?.name || machine.status || ''
+  const typeName = machine.machineType?.name || machine.type || ''
+
+  const statusMap = {
+    disponible: 'disponible',
+    reservada: 'reservada',
+    inactiva: 'inactiva',
+    disponible: 'disponible',
+  }
+
+  const normalizedStatus = statusMap[statusName?.toLowerCase()] || 'disponible'
+
+  const typeKey = typeName?.toLowerCase() || ''
+  const typeMap = {
+    caminadora: 'cardio',
+    elliptica: 'cardio',
+    'bicicleta de spinning': 'cardio',
+    'fuerza libre': 'fuerza-libre',
+    guiada: 'guiada',
+    funcional: 'funcional',
+    cardio: 'cardio',
+  }
+
+  return {
+    id: machine.id,
+    name: machine.name,
+    type: typeMap[typeKey] || 'cardio',
+    typeLabel: typeName || 'Cardio',
+    status: normalizedStatus,
+    image: machine.image || '/maquinas/cardio.png',
+    maxTime: machine.maxTime || null,
+  }
+}
+
 export async function fetchReservations() {
-  // Aquí devuelvo un clon simulado. Reemplaza por:
-  // return apiClient.get('/reservations')
   return delay(reservations.map((reservation) => ({ ...reservation })))
+}
+
+export async function fetchMachines() {
+  try {
+    const { data } = await apiClient.get('/machines')
+    return data.map(normalizeMachine)
+  } catch (err) {
+    // If authorization fails (403) or server rejects, try public test endpoint as fallback
+    if (err.response && err.response.status === 403) {
+      const { data } = await apiClient.get('/test/machines')
+      return data.map(normalizeMachine)
+    }
+    throw err
+  }
+}
+
+export async function fetchAvailability(machineId, date) {
+  const { data } = await apiClient.get(`/availability/${machineId}/${date}`)
+  const slotNames = Array.isArray(data) ? data : []
+  return slotNames.map((name) => slotMap.get(name) || { id: null, name, startTime: null })
+}
+
+export async function createBooking({ machineId, date, timeSlot, studentDocumentNumber }) {
+  const payload = {
+    student: { documentNumber: studentDocumentNumber },
+    machine: { id: machineId },
+    date,
+    timeSlot,
+    bookingStatus: { id: 1 },
+  }
+
+  const { data } = await apiClient.post('/bookings', payload)
+  return data
 }
 
 export async function createReservation(payload) {
@@ -84,9 +164,6 @@ export async function createReservation(payload) {
     updatedAt: new Date().toISOString(),
   }
   reservations.unshift(newReservation)
-  // Reemplazar por POST real:
-  // const { data } = await apiClient.post('/reservations', payload)
-  // return data
   return delay({ ...newReservation })
 }
 
@@ -101,8 +178,5 @@ export async function updateReservation(id, changes) {
     ...changes,
     updatedAt: new Date().toISOString(),
   }
-  // Reemplazar por PATCH real:
-  // const { data } = await apiClient.patch(`/reservations/${id}`, changes)
-  // return data
   return delay({ ...reservations[index] })
 }
