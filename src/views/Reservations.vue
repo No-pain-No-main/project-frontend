@@ -28,12 +28,11 @@
             <p class="muted-text">Código: {{ reservation.confirmationCode }}</p>
           </div>
           <div class="reservation-actions">
-            <RouterLink to="/student/check-in" class="primary-button">Check-in</RouterLink>
             <button class="ghost-button" type="button" @click="cancelReservation(reservation.id)">Cancelar</button>
           </div>
         </article>
       </div>
-      <p v-else class="muted-text">No tienes reservas pendientes de confirmar.</p>
+      <p v-else class="muted-text">No tienes reservas activas en este momento.</p>
     </section>
 
     <section class="content-band">
@@ -54,7 +53,7 @@
             <span class="badge" :class="reservation.status === 'confirmada' ? 'green' : 'danger'">{{ reservation.statusLabel }}</span>
           </div>
           <div class="reservation-meta">
-            <p v-if="reservation.acceptedAt" class="muted-text">Aceptada: {{ formatDate(reservation.acceptedAt) }}</p>
+            <p v-if="reservation.acceptedAt" class="muted-text">Actualizada: {{ formatDate(reservation.acceptedAt) }}</p>
             <p v-if="reservation.cancelledReason" class="muted-text">Motivo: {{ reservation.cancelledReason }}</p>
           </div>
         </article>

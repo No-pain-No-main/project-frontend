@@ -13,11 +13,9 @@ const Dashboard = () => import('../views/Dashboard.vue')
 const Reservations = () => import('../views/Reservations.vue')
 const Machines = () => import('../views/Machines.vue')
 const CheckIn = () => import('../views/CheckIn.vue')
-const About = () => import('../views/About.vue')
 const Admin = () => import('../views/Admin.vue')
 const AdminMachines = () => import('../views/admin/AdminMachines.vue')
 const AdminUsers = () => import('../views/admin/AdminUsers.vue')
-const AdminReservations = () => import('../views/admin/AdminReservations.vue')
 const AdminStats = () => import('../views/admin/AdminStats.vue')
 const Profile = () => import('../views/Profile.vue')
 const NotFound = () => import('../views/NotFound.vue')
@@ -29,7 +27,10 @@ const router = createRouter({
     {
       path: '/',
       component: LandingLayout,
-      children: [{ path: '', name: 'home', component: Home }],
+      children: [
+        { path: '', name: 'home', component: Home },
+        { path: 'check-in', name: 'check-in', component: CheckIn },
+      ],
     },
 
     // ── Autenticación ─────────────────────────────────────────────────
@@ -53,8 +54,6 @@ const router = createRouter({
         { path: 'profile', name: 'profile', component: Profile },
         { path: 'reservas', name: 'reservations', component: Reservations },
         { path: 'maquinas', name: 'machines', component: Machines },
-        { path: 'check-in', name: 'check-in', component: CheckIn },
-        { path: 'about', name: 'about', component: About },
       ],
     },
 
@@ -68,7 +67,6 @@ const router = createRouter({
         { path: 'profile', name: 'admin-profile', component: Profile },
         { path: 'maquinas', name: 'admin-machines', component: AdminMachines },
         { path: 'usuarios', name: 'admin-users', component: AdminUsers },
-        { path: 'reservas', name: 'admin-reservas', component: AdminReservations },
         { path: 'estadisticas', name: 'admin-stats', component: AdminStats },
       ],
     },
@@ -78,25 +76,22 @@ const router = createRouter({
   ],
 })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, from) => {
   const auth = useAuthStore()
 
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
-    next({ name: 'login', query: { redirect: to.fullPath } })
-    return
+    return { name: 'login', query: { redirect: to.fullPath } }
   }
 
   if (to.meta.role && auth.role !== to.meta.role) {
-    next(auth.isAdmin ? '/admin' : '/student/dashboard')
-    return
+    return auth.isAdmin ? { path: '/admin' } : { path: '/student/dashboard' }
   }
 
   if (to.meta.guestOnly && auth.isAuthenticated) {
-    next(auth.isAdmin ? '/admin' : '/student/dashboard')
-    return
+    return auth.isAdmin ? { path: '/admin' } : { path: '/student/dashboard' }
   }
 
-  next()
+  return true
 })
 
 export default router

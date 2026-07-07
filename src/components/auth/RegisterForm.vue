@@ -1,6 +1,8 @@
 <template>
   <section class="auth-page">
     <div class="auth-card register-card">
+      <RouterLink to="/" class="back-link">← Volver al inicio</RouterLink>
+
       <div class="auth-card__brand">
         <img src="/logo.png" alt="FitBook" />
         <div>
@@ -253,26 +255,26 @@ async function onSubmit() {
     return
   }
 
+  const documentTypeId = form.tipoDocumento === 'cc' ? 1 : form.tipoDocumento === 'ce' ? 2 : 1
+  const genderId = form.genero === 'Masculino' ? 1 : form.genero === 'Femenino' ? 2 : form.genero === 'Otro' ? 3 : 3
+
   const payload = {
-    nombre: `${form.nombres} ${form.primerApellido}`,
+    documentNumber: form.numeroDocumento,
+    firstName: form.nombres,
+    middleName: form.segundoNombre || '',
+    lastName: form.primerApellido,
+    secondLastName: form.segundoApellido || '',
     email: form.email,
-    password: form.password,
-    meta: {
-      nombres: form.nombres,
-      segundoNombre: form.segundoNombre,
-      primerApellido: form.primerApellido,
-      segundoApellido: form.segundoApellido,
-      fechaNacimiento: form.fechaNacimiento,
-      genero: form.genero,
-      tipoDocumento: form.tipoDocumento,
-      numeroDocumento: form.numeroDocumento,
-      telefono: form.telefono,
-      fraseSecreta: form.fraseSecreta,
-    },
+    documentType: { id: documentTypeId },
+    birthDate: form.fechaNacimiento,
+    phone: form.telefono || '',
+    gender: { id: genderId },
+    userStatus: { id: 1 },
+    passwordHash: form.password,
   }
 
   const success = await auth.register(payload)
-  if (success) router.push('/student/dashboard')
+  if (success) router.replace({ path: '/login', query: { registered: '1' } })
 }
 
 const stepValue = step
@@ -284,6 +286,20 @@ const isEdit = props.isEdit
 </script>
 
 <style scoped>
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 16px;
+  font-weight: 700;
+  color: var(--blue);
+  text-decoration: none;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}
+
 .register-card { max-width: 820px; margin: 24px auto; padding: 20px; border-radius: 14px; box-shadow: 0 18px 40px rgba(13, 38, 76, 0.08); background: #fff; }
 .register-header h2 { display:flex; align-items:center; gap:10px; font-size:1.4rem }
 .progress { display:flex; align-items:center; gap:12px; margin: 12px 0 18px }

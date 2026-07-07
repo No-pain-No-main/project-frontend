@@ -1978,6 +1978,7 @@ a {
 
 .machine-card--full .machine-card__body {
   padding: 18px 18px 4px;
+  flex: 1;
 }
 
 .machine-card__type {
@@ -1988,11 +1989,11 @@ a {
   color: var(--blue);
   font-weight: 800;
 }
-
 .machine-card--full .machine-card__actions {
   display: flex;
   gap: 10px;
   padding: 16px 18px 18px;
+  margin-top: auto;
 }
 
 .machine-card--full .machine-card__actions .ui-btn { flex: 1; }

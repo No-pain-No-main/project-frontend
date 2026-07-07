@@ -40,12 +40,7 @@
           @navigate="closeMobileSidebar"
         />
         
-        <SidebarLink
-          to="/admin/reservas"
-          :icon="['fas', 'calendar-check']"
-          :label="`Reservas actuales (${adminCount})`"
-          @navigate="closeMobileSidebar"
-        />
+        
       </template>
 
       <template v-else>
@@ -65,18 +60,6 @@
           to="/student/maquinas"
           :icon="['fas', 'dumbbell']"
           label="Maquinas"
-          @navigate="closeMobileSidebar"
-        />
-        <SidebarLink
-          to="/student/check-in"
-          :icon="['fas', 'clipboard-check']"
-          label="Check-in"
-          @navigate="closeMobileSidebar"
-        />
-        <SidebarLink
-          to="/student/about"
-          :icon="['fas', 'user-graduate']"
-          label="Progreso"
           @navigate="closeMobileSidebar"
         />
       </template>
@@ -108,22 +91,13 @@
 import { useRouter } from 'vue-router'
 import { onMounted, computed } from 'vue'
 import { useAuthStore } from '../../stores/auth'
-import { useReservationsStore } from '../../stores/reservations'
 import SidebarLink from './SidebarLink.vue'
 import { closeMobileSidebar, collapsed, mobileOpen, toggleCollapsed } from './state'
 
 const auth = useAuthStore()
 const router = useRouter()
-const reservationsStore = useReservationsStore()
 
-onMounted(() => {
-  if (!reservationsStore.reservations.length) reservationsStore.loadReservations()
-})
-
-const adminCount = computed(() => reservationsStore.adminReservations.length)
-
-function handleLogout() {
-  auth.logout()
+function handleLogout() {  auth.logout()
   router.push('/login')
 }
 </script>

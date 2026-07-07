@@ -10,28 +10,6 @@
     </header>
 
     <div class="dashboard-grid">
-      <section class="activity-panel card">
-        <div class="panel-header">
-          <div>
-            <p class="section-kicker">Actividad reciente</p>
-            <h2>Últimas acciones</h2>
-          </div>
-          <RouterLink to="/admin/estadisticas" class="ghost-button">Ver todo</RouterLink>
-        </div>
-
-        <ul class="activity-list">
-          <li v-for="item in recentActivity" :key="item.id">
-            <span class="activity-icon" :class="item.color">
-              <font-awesome-icon :icon="['fas', item.icon]" />
-            </span>
-            <div>
-              <p>{{ item.title }}</p>
-              <small>{{ item.time }}</small>
-            </div>
-          </li>
-        </ul>
-      </section>
-
       <section class="quick-actions card">
         <div class="panel-header">
           <div>
@@ -70,19 +48,10 @@ const adminInitials = computed(() => {
   return names.map((part) => part.charAt(0)).slice(0, 2).join('').toUpperCase()
 })
 
-const recentActivity = [
-  { id: 1, title: 'Estudiante solicitó reserva de Caminadora Matrix T50.', time: 'Hace 12 min', icon: 'calendar-check', color: 'green' },
-  { id: 2, title: 'Reserva cancelada por usuario María Ramírez.', time: 'Hace 34 min', icon: 'xmark-circle', color: 'red' },
-  { id: 3, title: 'Máquina sentadilla registrada por admin.', time: 'Hace 2 h', icon: 'dumbbell', color: 'blue' },
-  { id: 4, title: 'Máquina en mantenimiento asignada: Prensa de piernas.', time: 'Ayer', icon: 'tools', color: 'amber' },
-  { id: 5, title: 'Nuevo estudiante registrado: Juan Pérez.', time: 'Ayer', icon: 'user-plus', color: 'teal' },
-]
-
 const quickActions = [
   { label: 'Gestionar Máquinas', description: 'Agregar, editar o eliminar equipos', icon: 'gears', to: '/admin/maquinas', color: 'blue' },
   { label: 'Gestionar Estudiantes', description: 'Controlar usuarios y accesos', icon: 'users', to: '/admin/usuarios', color: 'green' },
   { label: 'Registrar Máquina', description: 'Añadir nuevo equipo al catálogo', icon: 'plus-circle', to: '/admin/maquinas', color: 'purple' },
-  { label: 'Ver Reservas', description: 'Revisar reservas actuales', icon: 'calendar-check', to: '/admin/reservas', color: 'teal' },
   { label: 'Ver Estadísticas', description: 'Analizar uso y tendencias', icon: 'chart-simple', to: '/admin/estadisticas', color: 'amber' },
 ]
 
@@ -115,18 +84,10 @@ const quickActions = [
 .stat-card__delta { font-size: 0.85rem; font-weight:700; }
 .stat-card__delta.positive { color: #10b981; }
 .stat-card__delta.negative { color: #ef4444; }
-.dashboard-grid { display:grid; grid-template-columns: 2fr 1fr; gap: 22px; }
+.dashboard-grid { display:grid; grid-template-columns: 1fr; gap: 22px; }
 .card { background:#fff; border-radius:24px; padding:24px; border:1px solid rgba(15,23,42,0.05); box-shadow: 0 24px 48px rgba(15,23,42,0.06); }
 .panel-header { display:flex; justify-content:space-between; gap:16px; align-items:center; margin-bottom:18px; }
 .panel-header h2 { margin:0; }
-.activity-list { display:grid; gap:14px; }
-.activity-list li { display:flex; gap:14px; align-items:center; padding:14px 0; border-bottom:1px solid rgba(15,23,42,0.06); }
-.activity-icon { width:36px; height:36px; border-radius:12px; display:grid; place-items:center; color:#fff; }
-.activity-icon.green { background:#10b981; }
-.activity-icon.red { background:#ef4444; }
-.activity-icon.blue { background:#2f6fed; }
-.activity-icon.amber { background:#f59e0b; }
-.activity-icon.teal { background:#14b8a6; }
 .action-grid { display:grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap:12px; }
 .action-card { text-align:left; padding:18px; border-radius:18px; border:1px solid rgba(15,23,42,0.07); background:#f8fbff; display:flex; gap:12px; align-items:flex-start; transition: transform 0.2s ease; min-width:0; }
 .action-card:hover { transform: translateY(-3px); }

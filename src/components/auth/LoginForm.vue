@@ -1,6 +1,8 @@
 <template>
   <section class="auth-page">
     <div class="auth-card">
+      <RouterLink to="/" class="back-link">← Volver al inicio</RouterLink>
+
       <div class="auth-card__brand">
         <img src="/logo.png" alt="FitBook" />
         <div>
@@ -16,14 +18,14 @@
 
       <form class="auth-form" @submit.prevent="handleSubmit">
         <div class="form-field">
-          <label for="email">Correo electrónico</label>
+          <label for="documentNumber">Número de documento</label>
           <input
-            id="email"
-            v-model="form.email"
-            type="email"
+            id="documentNumber"
+            v-model="form.documentNumber"
+            type="text"
             required
-            autocomplete="email"
-            placeholder="tu.correo@unal.edu.co"
+            autocomplete="username"
+            placeholder="1018456789"
           />
         </div>
 
@@ -75,13 +77,13 @@ const route = useRoute()
 const isDev = import.meta.env.DEV
 
 const form = reactive({
-  email: '',
+  documentNumber: '',
   password: '',
 })
 
 function redirectAfterLogin() {
   const redirectTo = route.query.redirect || (auth.isAdmin ? '/admin' : '/student/dashboard')
-  router.push(redirectTo)
+  router.replace(redirectTo)
 }
 
 async function handleSubmit() {
@@ -94,3 +96,19 @@ function handleDemoLogin(role) {
   redirectAfterLogin()
 }
 </script>
+
+<style scoped>
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 16px;
+  font-weight: 700;
+  color: var(--blue);
+  text-decoration: none;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}
+</style>

@@ -128,4 +128,13 @@ function deleteUser() {
 .admin-table tbody tr:hover { background: rgba(47,111,237,0.05); }
 .admin-form { display: grid; gap: 16px; margin-top: 8px; }
 button.danger { color: var(--red); }
+.actions-cell {
+  display: flex;
+  gap: 8px;
+}
+.actions-cell .ghost-button {
+  min-width: 104px;
+  text-align: center;
+  justify-content: center;
+}
 </style>
