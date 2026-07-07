@@ -39,7 +39,13 @@ export async function register(payload) {
 
 export async function fetchCurrentUser() {
   const { data } = await apiClient.get('/auth/me')
-  return data
+  return {
+    id: data.documentNumber,
+    nombre: `${data.firstName || ''} ${data.lastName || ''}`.trim(),
+    email: data.email || '',
+    rol: data.role || 'estudiante',
+    documentNumber: data.documentNumber,
+  }
 }
 
 export function logout() {

@@ -79,16 +79,14 @@ const router = createRouter({
 router.beforeEach((to, from) => {
   const auth = useAuthStore()
 
+  // Proteger rutas que requieren autenticación
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
     return { name: 'login', query: { redirect: to.fullPath } }
   }
 
-  if (to.meta.role && auth.role !== to.meta.role) {
-    return auth.isAdmin ? { path: '/admin' } : { path: '/student/dashboard' }
-  }
-
+  // Redirigir usuarios autenticados fuera de login/register
   if (to.meta.guestOnly && auth.isAuthenticated) {
-    return auth.isAdmin ? { path: '/admin' } : { path: '/student/dashboard' }
+    return auth.role === 'admin' ? '/admin' : '/student/dashboard'
   }
 
   return true
