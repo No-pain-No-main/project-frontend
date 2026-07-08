@@ -40,30 +40,6 @@
 
   <StoryCarousel />
 
-  <section class="info-band">
-    <article class="info-card">
-      <span class="card-icon blue">
-        <font-awesome-icon :icon="['fas', 'user-graduate']" />
-      </span>
-      <h3>Para estudiantes</h3>
-      <p class="muted-text">
-        Reserva máquinas dentro de la semana en curso, cancela sin complicaciones y consulta tu
-        historial de uso en cualquier momento.
-      </p>
-    </article>
-
-    <article class="info-card">
-      <span class="card-icon green">
-        <font-awesome-icon :icon="['fas', 'shield-halved']" />
-      </span>
-      <h3>Acceso equitativo</h3>
-      <p class="muted-text">
-        Límites diarios de reservas y franjas horarias justas para un entorno universitario con
-        alto volumen de estudiantes.
-      </p>
-    </article>
-  </section>
-
   <HowItWorks />
 
   <MachinesShowcase />
