@@ -568,31 +568,6 @@ a {
   border-color: var(--blue);
 }
 
-.mini-machine-list {
-  display: grid;
-  gap: 10px;
-}
-
-.mini-machine {
-  display: grid;
-  grid-template-columns: 42px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 14px;
-  padding: 12px 14px;
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  background: #fff;
-}
-
-.mini-machine strong {
-  display: block;
-  font-size: 14px;
-}
-
-.mini-machine .badge {
-  margin: 0;
-}
-
 @media (max-width: 860px) {
   .next-reservation {
     grid-template-columns: 1fr;
@@ -611,11 +586,6 @@ a {
 @media (max-width: 520px) {
   .quick-links {
     grid-template-columns: 1fr;
-  }
-
-  .mini-machine {
-    grid-template-columns: 1fr;
-    text-align: left;
   }
 }
 

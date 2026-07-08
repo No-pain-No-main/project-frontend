@@ -28,12 +28,6 @@
           label="Reservas"
           @navigate="closeMobileSidebar"
         />
-        <SidebarLink
-          to="/student/maquinas"
-          :icon="['fas', 'dumbbell']"
-          label="Maquinas"
-          @navigate="closeMobileSidebar"
-        />
       </template>
 
       <!-- Enlaces para administrador -->
