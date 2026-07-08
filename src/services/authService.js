@@ -20,7 +20,7 @@ function buildSession(data, role) {
 }
 
 export async function register(payload) {
-  const { data } = await apiClient.post('/student', payload)
+  const { data } = await apiClient.post('/students', payload)
 
   return {
     id: data.documentNumber,

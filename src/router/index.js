@@ -46,7 +46,7 @@ const router = createRouter({
     {
       path: '/student',
       component: StudentLayout,
-      meta: { requiresAuth: true, role: 'estudiante' },
+      meta: { requiresAuth: true, role: 'student' },
       children: [
         { path: '', redirect: { name: 'dashboard' } },
         { path: 'dashboard', name: 'dashboard', component: Dashboard },
