@@ -52,7 +52,7 @@
       <div class="machines-grid">
         <article v-for="machine in machinePageState.items" :key="machine.id" class="machine-card machine-card--full">
           <div class="machine-card__media">
-            <img :src="machine.image || `/maquinas/${defaultImageMap[machine.type] || 'pecho.png'}`" :alt="machine.name" loading="lazy" />
+            <img :src="machine.image || `/maquinas/${defaultImageMap[machine.type] || 'cardio.png'}`" :alt="machine.name" loading="lazy" />
           </div>
 
           <div class="machine-card__body">
@@ -62,13 +62,11 @@
 
           <div class="machine-card__actions">
             <Button variant="outline" size="sm" @click="openDetailsModal(machine)">Más información</Button>
-            <Button variant="primary" size="sm" @click="openReserveModal(machine)">Reservar</Button>
+            <Button variant="primary" size="sm" @click="openReserveModal(machine)">
+              Reservar
+            </Button>
           </div>
         </article>
-      </div>
-
-      <div class="machines-pagination">
-        <Pagination v-model="machinePage" :total-pages="machinePageState.totalPages" />
       </div>
     </div>
 
@@ -128,12 +126,11 @@
 </template>
 
 <script setup>
-import { computed, ref, watch, onMounted } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import Button from '../components/ui/Button.vue'
 import Alert from '../components/ui/Alert.vue'
 import EmptyState from '../components/ui/EmptyState.vue'
 import Modal from '../components/ui/Modal.vue'
-import Pagination from '../components/ui/Pagination.vue'
 import { useAuthStore } from '../stores/auth'
 import * as reservationService from '../services/reservationService'
 
@@ -160,7 +157,7 @@ function formatDateValue(date) {
 
 function buildWeekDays() {
   const base = startOfWeek(new Date())
-  return Array.from({ length: 6 }, (_, index) => {
+  return Array.from({ length: 5 }, (_, index) => {
     const date = new Date(base)
     date.setDate(base.getDate() + index)
     return {
@@ -192,21 +189,13 @@ const categoryOptions = ref([])
 const categoriesLoading = ref(false)
 const selectedCategory = ref(null)
 const machinesLoading = ref(false)
-const machinePage = ref(1)
 const machinePageState = ref({ items: [], totalElements: 0, totalPages: 1, page: 0, size: 6 })
 
 const defaultImageMap = {
-  cardio: 'cardio.png',
-  funcional: 'brazo.png',
-  'fuerza-libre': 'pecho.png',
-  guiada: 'piernas.png',
-  pierna: 'piernas.png',
-  pecho: 'pecho.png',
-  espalda: 'espalda.png',
-  brazo: 'brazo.png',
+  caminadora: 'cardio.png',
+  eliptica: 'piernas.png',
+  'bicicleta-spinning': 'espalda.png',
 }
-
-// status badge removed from machine cards; status mappings kept in backend
 
 const showDetails = ref(false)
 const selectedMachine = ref(null)
@@ -222,14 +211,16 @@ const selectedSlot = ref(null)
 function selectDate(date) {
   selectedDate.value = date
   selectedCategory.value = null
-  machinePage.value = 1
+  selectedMachine.value = null
+  selectedSlot.value = null
   machinePageState.value = { items: [], totalElements: 0, totalPages: 1, page: 0, size: 6 }
   feedback.value = ''
 }
 
 function selectCategory(value) {
   selectedCategory.value = value
-  machinePage.value = 1
+  selectedMachine.value = null
+  selectedSlot.value = null
   feedback.value = ''
   loadMachines()
 }
@@ -241,12 +232,6 @@ function selectSlot(slot) {
 
 onMounted(() => {
   loadCategories()
-})
-
-watch(machinePage, () => {
-  if (selectedCategory.value) {
-    loadMachines()
-  }
 })
 
 async function loadCategories() {
@@ -268,18 +253,10 @@ async function loadMachines() {
   machinesLoading.value = true
   try {
     const payload = await reservationService.fetchMachines({
-      page: machinePage.value - 1,
-      size: 6,
       type: selectedCategory.value,
     })
 
-    machinePageState.value = {
-      items: payload.items || [],
-      totalElements: Number(payload.totalElements || 0),
-      totalPages: Number(payload.totalPages || 1),
-      page: Number(payload.page || 0),
-      size: Number(payload.size || 6),
-    }
+    machinePageState.value = payload
   } finally {
     machinesLoading.value = false
   }
@@ -333,7 +310,7 @@ async function confirmReservation() {
       feedback.value = `Tu reserva quedó creada para ${selectedDateLabel.value} en la franja ${selectedSlot.value.name}.`
       feedbackTone.value = 'success'
       feedbackTitle.value = '¡Reserva creada!'
-      await loadAvailability()
+      selectedSlot.value = null
       return
     }
 

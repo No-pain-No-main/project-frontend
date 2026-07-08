@@ -13,11 +13,6 @@
           <strong>Atención:</strong> {{ lateMessage }}
         </div>
       </div>
-
-      <RouterLink to="/student/maquinas" class="primary-button">
-        <font-awesome-icon :icon="['fas', 'calendar-check']" />
-        Reservar máquina
-      </RouterLink>
     </div>
 
     <!-- Accesos rápidos -->

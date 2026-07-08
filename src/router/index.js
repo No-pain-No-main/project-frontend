@@ -70,6 +70,7 @@ const router = createRouter({
         { path: 'maquinas', name: 'admin-machines', component: AdminMachines },
         { path: 'reservas', name: 'admin-bookings', component: AdminBookings },
         { path: 'reportes', name: 'admin-reports', component: AdminReports },
+        { path: 'profile', name: 'admin-profile', component: Profile },
       ],
     },
 
