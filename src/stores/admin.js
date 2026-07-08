@@ -174,6 +174,87 @@ export const useAdminStore = defineStore('admin', () => {
     filterMachStatuses.value = []
   }
 
+  // ── Bookings ─────────────────────────────────────────
+  const bookings = ref([])
+  const bookingsLoading = ref(false)
+  const filterBookStudent = ref('')
+  const filterBookStatuses = ref([])
+  const filterBookDateFrom = ref('')
+  const filterBookDateTo = ref('')
+
+  const filteredBookings = computed(() => {
+    let result = bookings.value
+
+    const qStudent = filterBookStudent.value.toLowerCase().trim()
+    if (qStudent) {
+      result = result.filter(b => {
+        const s = b.student
+        if (!s) return false
+        const fullName = `${s.firstName || ''} ${s.middleName || ''} ${s.lastName || ''} ${s.secondLastName || ''}`
+        return fullName.toLowerCase().includes(qStudent) || s.documentNumber?.toLowerCase().includes(qStudent)
+      })
+    }
+
+    if (filterBookStatuses.value.length > 0) {
+      result = result.filter(b => filterBookStatuses.value.includes(b.bookingStatus?.id))
+    }
+
+    if (filterBookDateFrom.value) {
+      const from = filterBookDateFrom.value
+      result = result.filter(b => b.date && b.date >= from)
+    }
+
+    if (filterBookDateTo.value) {
+      const to = filterBookDateTo.value
+      result = result.filter(b => b.date && b.date <= to)
+    }
+
+    return result
+  })
+
+  async function loadBookings() {
+    bookingsLoading.value = true
+    error.value = null
+    try {
+      bookings.value = await adminService.fetchBookings()
+    } catch (err) {
+      error.value = 'No se pudieron cargar las reservas.'
+    } finally {
+      bookingsLoading.value = false
+    }
+  }
+
+  async function cancelBooking(bookingId) {
+    try {
+      const updated = await adminService.cancelBooking(bookingId)
+      const idx = bookings.value.findIndex(b => b.id === bookingId)
+      if (idx !== -1) bookings.value[idx] = updated
+      return true
+    } catch (err) {
+      error.value = 'No se pudo cancelar la reserva.'
+      return false
+    }
+  }
+
+  async function changeBookingStatus(bookingId, statusId) {
+    try {
+      const updated = await adminService.updateBookingStatus(bookingId, statusId)
+      const idx = bookings.value.findIndex(b => b.id === bookingId)
+      if (idx !== -1) bookings.value[idx] = updated
+      return true
+    } catch (err) {
+      error.value = 'No se pudo actualizar el estado de la reserva.'
+      return false
+    }
+  }
+
+  function resetBookingFilters() {
+    filterBookStudent.value = ''
+    filterBookStatuses.value = []
+    filterBookDateFrom.value = ''
+    filterBookDateTo.value = ''
+  }
+
   return {
     students,
     loading,
@@ -199,5 +280,17 @@ export const useAdminStore = defineStore('admin', () => {
     editMachine,
     removeMachine,
     resetMachineFilters,
+    // Bookings
+    bookings,
+    bookingsLoading,
+    filterBookStudent,
+    filterBookStatuses,
+    filterBookDateFrom,
+    filterBookDateTo,
+    filteredBookings,
+    loadBookings,
+    cancelBooking,
+    changeBookingStatus,
+    resetBookingFilters,
   }
 })

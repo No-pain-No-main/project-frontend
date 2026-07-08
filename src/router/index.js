@@ -17,6 +17,7 @@ const Profile = () => import('../views/Profile.vue')
 const AdminDashboard = () => import('../views/admin/AdminDashboard.vue')
 const AdminUsers = () => import('../views/admin/AdminUsers.vue')
 const AdminMachines = () => import('../views/admin/AdminMachines.vue')
+const AdminBookings = () => import('../views/admin/AdminBookings.vue')
 const NotFound = () => import('../views/NotFound.vue')
 
 const router = createRouter({
@@ -66,6 +67,7 @@ const router = createRouter({
         { path: 'dashboard', name: 'admin-dashboard', component: AdminDashboard },
         { path: 'usuarios', name: 'admin-users', component: AdminUsers },
         { path: 'maquinas', name: 'admin-machines', component: AdminMachines },
+        { path: 'reservas', name: 'admin-bookings', component: AdminBookings },
       ],
     },
 

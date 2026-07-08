@@ -43,3 +43,19 @@ export async function deleteMachine(machineId) {
   const { data } = await apiClient.delete(`/machines/${machineId}`)
   return data
 }
+
+// ── Bookings ──────────────────────────────────────────────
+export async function fetchBookings() {
+  const { data } = await apiClient.get('/bookings')
+  return data
+}
+
+export async function cancelBooking(bookingId) {
+  const { data } = await apiClient.post(`/bookings/${bookingId}/cancel`)
+  return data
+}
+
+export async function updateBookingStatus(bookingId, statusId) {
+  const { data } = await apiClient.patch(`/bookings/${bookingId}/status`, { statusId })
+  return data
+}
