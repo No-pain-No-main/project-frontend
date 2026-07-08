@@ -1,7 +1,7 @@
 <template>
   <header class="navbar">
     <div>
-      <p class="navbar__eyebrow">Hola, estudiante</p>
+      <p class="navbar__eyebrow">Hola, {{ auth.role === 'admin' ? 'administrador' : 'estudiante' }}</p>
       <h1>{{ title }}</h1>
     </div>
 
@@ -54,8 +54,8 @@ function toggleSearch() {
 }
 
 function submitSearch() {
-  const path = auth.isAdmin ? '/admin/maquinas' : '/student/maquinas'
-  router.push({ path, query: { q: searchTerm.value || undefined } })
+  if (auth.role === 'admin') return
+  router.push({ path: '/student/maquinas', query: { q: searchTerm.value || undefined } })
   showSearch.value = false
 }
 
@@ -65,18 +65,15 @@ const titles = {
   reservations: 'Reservas',
   machines: 'Maquinas',
   'check-in': 'Check-in',
-  admin: 'Administracion',
-  'admin-machines': 'Gestión de máquinas',
-  'admin-users': 'Usuarios',
-  'admin-stats': 'Estadísticas',
-  'admin-settings': 'Configuración',
 }
 
 const title = computed(() => titles[route.name] || 'FitBook')
 
 function goToProfile() {
-
-  if (auth.isAdmin) router.push('/admin/profile')
-  else router.push('/student/profile')
+  if (auth.role === 'admin') {
+    router.push('/admin/profile')
+  } else {
+    router.push('/student/profile')
+  }
 }
 </script>

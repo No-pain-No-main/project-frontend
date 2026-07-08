@@ -279,8 +279,7 @@ a {
 .progress-page,
 .reservations-page,
 .machines-page,
-.checkin-page,
-.admin-page {
+.checkin-page {
   display: grid;
   gap: 18px;
 }
@@ -2070,13 +2069,6 @@ a {
 
 .machine-card--full .machine-card__actions .ui-btn { flex: 1; }
 
-.machine-card__actions--admin {
-  flex-wrap: wrap;
-}
-
-.machine-card__actions--admin .ui-btn {
-  flex: 1 1 calc(50% - 5px);
-}
 
 /* ── ReservationCard ───────────────────────────────────────────────────── */
 .reservation-card {
@@ -2175,12 +2167,3 @@ a {
 
 .machines-alert { margin-top: 16px; }
 
-.admin-form {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 14px;
-}
-
-@media (max-width: 520px) {
-  .admin-form { grid-template-columns: 1fr; }
-}

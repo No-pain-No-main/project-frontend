@@ -1,5 +1,4 @@
 <template>
-
   <div class="app-shell">
     <Sidebar />
 

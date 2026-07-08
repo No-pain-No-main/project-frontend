@@ -10,8 +10,7 @@
       <h3>{{ machine.name }}</h3>
     </div>
 
-    <!-- Modo estudiante: solo puede consultar y reservar -->
-    <div v-if="mode === 'student'" class="machine-card__actions">
+    <div class="machine-card__actions">
       <Button variant="outline" size="sm" @click="$emit('details', machine)">Más información</Button>
       <Button
         variant="primary"
@@ -21,20 +20,6 @@
       >
         Reservar
       </Button>
-    </div>
-
-    <!-- Modo admin: gestión del catálogo -->
-    <div v-else class="machine-card__actions machine-card__actions--admin">
-      <Button variant="outline" size="sm" :icon="['fas', 'pen']" @click="$emit('edit', machine)">Editar</Button>
-      <Button
-        variant="subtle"
-        size="sm"
-        :icon="machine.status === 'inactiva' ? ['fas', 'toggle-on'] : ['fas', 'toggle-off']"
-        @click="$emit('toggle-status', machine)"
-      >
-        {{ machine.status === 'inactiva' ? 'Activar' : 'Desactivar' }}
-      </Button>
-      <Button variant="danger" size="sm" :icon="['fas', 'trash']" @click="$emit('delete', machine)">Eliminar</Button>
     </div>
   </article>
 </template>
@@ -46,10 +31,9 @@ import Button from '../ui/Button.vue'
 
 const props = defineProps({
   machine: { type: Object, required: true }, 
-  mode: { type: String, default: 'student' }, 
 })
 
-defineEmits(['reserve', 'details', 'edit', 'delete', 'toggle-status'])
+defineEmits(['reserve', 'details'])
 
 // Estados reales del dominio Disponible | Reservada | Inactiva
 

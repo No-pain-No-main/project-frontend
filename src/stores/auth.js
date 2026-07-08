@@ -10,8 +10,6 @@ export const useAuthStore = defineStore('auth', () => {
 
   const isAuthenticated = computed(() => Boolean(token.value))
   const role = computed(() => user.value?.rol || null)
-  const isAdmin = computed(() => role.value === 'admin')
-
   function persistSession({ token: newToken, user: newUser }) {
     token.value = newToken
     user.value = newUser
@@ -23,11 +21,11 @@ export const useAuthStore = defineStore('auth', () => {
     loading.value = true
     error.value = null
     try {
-      const data = await authService.login(credentials, role)
+      const data = await authService.login({ ...credentials, role })
       persistSession(data)
       return true
     } catch (err) {
-      error.value = err.response?.data?.message || `No se pudo iniciar sesión como ${role === 'admin' ? 'administrador' : 'estudiante'}.`
+      error.value = err.response?.data?.message || 'No se pudo iniciar sesión.'
       return false
     } finally {
       loading.value = false
@@ -74,7 +72,6 @@ export const useAuthStore = defineStore('auth', () => {
     error,
     isAuthenticated,
     role,
-    isAdmin,
     login,
     register,
     logout,

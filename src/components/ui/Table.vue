@@ -3,7 +3,11 @@
     <table class="ui-table">
       <thead>
         <tr>
-          <th v-for="col in columns" :key="col.key">{{ col.label }}</th>
+          <th v-for="col in columns" :key="col.key">
+            <slot :name="`header-${col.key}`" :column="col">
+              {{ col.label }}
+            </slot>
+          </th>
         </tr>
       </thead>
       <tbody>

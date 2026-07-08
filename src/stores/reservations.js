@@ -23,8 +23,6 @@ export const useReservationsStore = defineStore('reservations', () => {
   const getPastReservations = (studentId) =>
     getStudentReservations(studentId).filter((reservation) => !['activa', 'aceptada'].includes(reservation.status))
 
-  const adminReservations = computed(() => reservations.value)
-
   const lateAlerts = (studentId) =>
     getStudentReservations(studentId).filter((reservation) => reservation.late && reservation.status === 'cancelada')
 
@@ -143,7 +141,6 @@ export const useReservationsStore = defineStore('reservations', () => {
     reservations,
     loading,
     error,
-    adminReservations,
     getStudentReservations,
     getActiveReservation,
     getPendingReservations,

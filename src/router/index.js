@@ -1,10 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 
-import AdminLayout from '../layouts/AdminLayout.vue'
 import AuthLayout from '../layouts/AuthLayout.vue'
 import LandingLayout from '../layouts/LandingLayout.vue'
 import StudentLayout from '../layouts/StudentLayout.vue'
+import AdminLayout from '../layouts/AdminLayout.vue'
 
 const Home = () => import('../views/Home.vue')
 const LoginForm = () => import('../components/auth/LoginForm.vue')
@@ -13,11 +13,10 @@ const Dashboard = () => import('../views/Dashboard.vue')
 const Reservations = () => import('../views/Reservations.vue')
 const Machines = () => import('../views/Machines.vue')
 const CheckIn = () => import('../views/CheckIn.vue')
-const Admin = () => import('../views/Admin.vue')
-const AdminMachines = () => import('../views/admin/AdminMachines.vue')
-const AdminUsers = () => import('../views/admin/AdminUsers.vue')
-const AdminStats = () => import('../views/admin/AdminStats.vue')
 const Profile = () => import('../views/Profile.vue')
+const AdminDashboard = () => import('../views/admin/AdminDashboard.vue')
+const AdminUsers = () => import('../views/admin/AdminUsers.vue')
+const AdminMachines = () => import('../views/admin/AdminMachines.vue')
 const NotFound = () => import('../views/NotFound.vue')
 
 const router = createRouter({
@@ -63,11 +62,10 @@ const router = createRouter({
       component: AdminLayout,
       meta: { requiresAuth: true, role: 'admin' },
       children: [
-        { path: '', name: 'admin', component: Admin },
-        { path: 'profile', name: 'admin-profile', component: Profile },
-        { path: 'maquinas', name: 'admin-machines', component: AdminMachines },
+        { path: '', redirect: { name: 'admin-dashboard' } },
+        { path: 'dashboard', name: 'admin-dashboard', component: AdminDashboard },
         { path: 'usuarios', name: 'admin-users', component: AdminUsers },
-        { path: 'estadisticas', name: 'admin-stats', component: AdminStats },
+        { path: 'maquinas', name: 'admin-machines', component: AdminMachines },
       ],
     },
 
@@ -86,7 +84,13 @@ router.beforeEach((to, from) => {
 
   // Redirigir usuarios autenticados fuera de login/register
   if (to.meta.guestOnly && auth.isAuthenticated) {
-    return auth.role === 'admin' ? '/admin' : '/student/dashboard'
+    if (auth.role === 'admin') return '/admin/dashboard'
+    return '/student/dashboard'
+  }
+
+  // Validar rol específico
+  if (to.meta.role && auth.role !== to.meta.role) {
+    return { name: 'home' }
   }
 
   return true

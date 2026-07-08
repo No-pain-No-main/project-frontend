@@ -14,36 +14,8 @@
     </div>
 
     <nav class="sidebar__nav" aria-label="Principal">
-      <template v-if="auth.isAdmin">
-        <SidebarLink
-          to="/admin"
-          :icon="['fas', 'house']"
-          label="Inicio"
-          @navigate="closeMobileSidebar"
-        />
-        <SidebarLink
-          to="/admin/maquinas"
-          :icon="['fas', 'dumbbell']"
-          label="Máquinas"
-          @navigate="closeMobileSidebar"
-        />
-        <SidebarLink
-          to="/admin/usuarios"
-          :icon="['fas', 'users-gear']"
-          label="Usuarios"
-          @navigate="closeMobileSidebar"
-        />
-        <SidebarLink
-          to="/admin/estadisticas"
-          :icon="['fas', 'chart-line']"
-          label="Estadísticas"
-          @navigate="closeMobileSidebar"
-        />
-        
-        
-      </template>
-
-      <template v-else>
+      <!-- Enlaces para estudiante -->
+      <template v-if="auth.role === 'student'">
         <SidebarLink
           to="/student/dashboard"
           :icon="['fas', 'house']"
@@ -60,6 +32,34 @@
           to="/student/maquinas"
           :icon="['fas', 'dumbbell']"
           label="Maquinas"
+          @navigate="closeMobileSidebar"
+        />
+      </template>
+
+      <!-- Enlaces para administrador -->
+      <template v-if="auth.role === 'admin'">
+        <SidebarLink
+          to="/admin/dashboard"
+          :icon="['fas', 'gauge-high']"
+          label="Dashboard"
+          @navigate="closeMobileSidebar"
+        />
+        <SidebarLink
+          to="/admin/usuarios"
+          :icon="['fas', 'users']"
+          label="Usuarios"
+          @navigate="closeMobileSidebar"
+        />
+        <SidebarLink
+          to="/admin/maquinas"
+          :icon="['fas', 'dumbbell']"
+          label="Máquinas"
+          @navigate="closeMobileSidebar"
+        />
+        <SidebarLink
+          to="/admin/reservas"
+          :icon="['fas', 'calendar-check']"
+          label="Reservas"
           @navigate="closeMobileSidebar"
         />
       </template>

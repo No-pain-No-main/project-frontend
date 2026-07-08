@@ -11,40 +11,46 @@
         </div>
       </div>
 
-      <h2>Inicia sesión</h2>
-      <p class="muted-text">Selecciona tu tipo de acceso para entrar al sistema.</p>
-
-      <div class="role-switcher" role="tablist" aria-label="Tipo de acceso">
+      <div class="role-toggle">
         <button
+          :class="['role-btn', { active: selectedRole === 'student' }]"
           type="button"
-          class="role-switcher__button"
-          :class="{ active: selectedRole === 'student' }"
-          @click="selectRole('student')"
+          @click="selectedRole = 'student'"
         >
+          <font-awesome-icon :icon="['fas', 'user-graduate']" />
           Estudiante
         </button>
         <button
+          :class="['role-btn', { active: selectedRole === 'admin' }]"
           type="button"
-          class="role-switcher__button"
-          :class="{ active: selectedRole === 'admin' }"
-          @click="selectRole('admin')"
+          @click="selectedRole = 'admin'"
         >
+          <font-awesome-icon :icon="['fas', 'user-tie']" />
           Administrador
         </button>
       </div>
+
+      <h2>Inicia sesión</h2>
+      <p class="muted-text">
+        {{
+          selectedRole === 'admin'
+            ? 'Ingresa tus credenciales de administrador.'
+            : 'Ingresa tus credenciales para entrar al sistema.'
+        }}
+      </p>
 
       <p v-if="auth.error" class="form-error">{{ auth.error }}</p>
 
       <form class="auth-form" @submit.prevent="handleSubmit">
         <div class="form-field">
-          <label for="documentNumber">{{ selectedRole === 'admin' ? 'Documento del administrador' : 'Número de documento' }}</label>
+          <label for="documentNumber">Número de documento</label>
           <input
             id="documentNumber"
             v-model="form.documentNumber"
             type="text"
             required
             autocomplete="username"
-            :placeholder="selectedRole === 'admin' ? '1018456789' : '1018456789'"
+            placeholder="1018456789"
           />
         </div>
 
@@ -66,7 +72,7 @@
         </button>
       </form>
 
-      <p class="auth-card__footer">
+      <p v-if="selectedRole === 'student'" class="auth-card__footer">
         ¿No tienes cuenta? <RouterLink to="/register">Regístrate</RouterLink>
       </p>
     </div>
@@ -82,21 +88,19 @@ const auth = useAuthStore()
 const router = useRouter()
 const route = useRoute()
 
+const selectedRole = ref('student')
+
 const form = reactive({
   documentNumber: '',
   password: '',
 })
 
-const selectedRole = ref('student')
-
-function selectRole(role) {
-  selectedRole.value = role
-  auth.error = null
-}
-
 function redirectAfterLogin() {
-  const redirectTo = route.query.redirect || (selectedRole.value === 'admin' ? '/admin' : '/student/dashboard')
-  router.replace(redirectTo)
+  if (selectedRole.value === 'admin') {
+    router.replace(route.query.redirect || '/admin/dashboard')
+  } else {
+    router.replace(route.query.redirect || '/student/dashboard')
+  }
 }
 
 async function handleSubmit() {
@@ -120,27 +124,37 @@ async function handleSubmit() {
   text-decoration: underline;
 }
 
-.role-switcher {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+.role-toggle {
+  display: flex;
+  gap: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--gray-300);
+  margin-bottom: 20px;
+}
+
+.role-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   gap: 8px;
-  margin: 16px 0 8px;
-}
-
-.role-switcher__button {
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--text);
-  padding: 10px 12px;
-  border-radius: 999px;
-  font-weight: 700;
+  padding: 10px 16px;
+  border: none;
   cursor: pointer;
-  transition: all 0.2s ease;
+  font-size: 0.95rem;
+  font-weight: 600;
+  background: var(--gray-100);
+  color: var(--gray-600);
+  transition: background 0.2s, color 0.2s;
 }
 
-.role-switcher__button.active {
+.role-btn.active {
   background: var(--blue);
-  border-color: var(--blue);
-  color: white;
+  color: #fff;
+}
+
+.role-btn:not(.active):hover {
+  background: var(--gray-200);
 }
 </style>

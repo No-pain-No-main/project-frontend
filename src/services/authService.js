@@ -1,21 +1,19 @@
 import apiClient from './apiClient'
 
-export async function login({ documentNumber, password }, role = 'student') {
+export async function login({ documentNumber, password, role = 'student' }) {
   const endpoint = role === 'admin' ? '/auth/admin/login' : '/auth/student/login'
   const { data } = await apiClient.post(endpoint, { documentNumber, password })
   return buildSession(data, role)
 }
 
-function buildSession(data, defaultRole) {
-  const normalizedRole = (data.role || defaultRole || 'student').toString().toLowerCase()
-
+function buildSession(data, role) {
   return {
     token: data.token,
     user: {
       id: data.documentNumber,
       nombre: `${data.firstName || ''} ${data.lastName || ''}`.trim(),
       email: data.email || '',
-      rol: normalizedRole === 'admin' ? 'admin' : 'student',
+      rol: role,
       documentNumber: data.documentNumber,
     },
   }

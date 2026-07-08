@@ -53,17 +53,6 @@
     </article>
 
     <article class="info-card">
-      <span class="card-icon amber">
-        <font-awesome-icon :icon="['fas', 'users-gear']" />
-      </span>
-      <h3>Para administradores</h3>
-      <p class="muted-text">
-        Gestiona el catálogo de máquinas, controla estados y usuarios, y consulta reportes
-        semanales de uso desde un panel dedicado.
-      </p>
-    </article>
-
-    <article class="info-card">
       <span class="card-icon green">
         <font-awesome-icon :icon="['fas', 'shield-halved']" />
       </span>
