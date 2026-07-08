@@ -1,38 +1,34 @@
 import apiClient from './apiClient'
 
-export async function login({ documentNumber, password }) {
-  // Intentar login como estudiante primero
-  try {
-    const { data } = await apiClient.post('/auth/student/login', { documentNumber, password })
-    return buildSession(data, 'student')
-  } catch {
-    // Si falla, intentar como administrador
-    const { data } = await apiClient.post('/auth/admin/login', { documentNumber, password })
-    return buildSession(data, 'admin')
-  }
+export async function login({ documentNumber, password }, role = 'student') {
+  const endpoint = role === 'admin' ? '/auth/admin/login' : '/auth/student/login'
+  const { data } = await apiClient.post(endpoint, { documentNumber, password })
+  return buildSession(data, role)
 }
 
 function buildSession(data, defaultRole) {
+  const normalizedRole = (data.role || defaultRole || 'student').toString().toLowerCase()
+
   return {
     token: data.token,
     user: {
       id: data.documentNumber,
       nombre: `${data.firstName || ''} ${data.lastName || ''}`.trim(),
       email: data.email || '',
-      rol: data.role ? data.role.toLowerCase() : defaultRole,
+      rol: normalizedRole === 'admin' ? 'admin' : 'student',
       documentNumber: data.documentNumber,
     },
   }
 }
 
 export async function register(payload) {
-  const { data } = await apiClient.post('/students', payload)
+  const { data } = await apiClient.post('/student', payload)
 
   return {
     id: data.documentNumber,
     nombre: `${data.firstName || ''} ${data.lastName || ''}`.trim(),
     email: data.email,
-    rol: 'estudiante',
+    rol: 'student',
     documentNumber: data.documentNumber,
   }
 }
@@ -43,7 +39,7 @@ export async function fetchCurrentUser() {
     id: data.documentNumber,
     nombre: `${data.firstName || ''} ${data.lastName || ''}`.trim(),
     email: data.email || '',
-    rol: data.role || 'estudiante',
+    rol: data.role || 'student',
     documentNumber: data.documentNumber,
   }
 }

@@ -28,11 +28,11 @@ export const useReservationsStore = defineStore('reservations', () => {
   const lateAlerts = (studentId) =>
     getStudentReservations(studentId).filter((reservation) => reservation.late && reservation.status === 'cancelada')
 
-  const loadReservations = async () => {
+  const loadReservations = async (studentDocumentNumber) => {
     loading.value = true
     error.value = null
     try {
-      reservations.value = await reservationService.fetchReservations()
+      reservations.value = await reservationService.fetchReservations(studentDocumentNumber)
     } catch (err) {
       error.value = err.message || 'No se pudieron cargar las reservas.'
     } finally {
@@ -59,15 +59,17 @@ export const useReservationsStore = defineStore('reservations', () => {
     loading.value = true
     error.value = null
     try {
-      const updated = await reservationService.updateReservation(id, {
+      const updated = await reservationService.cancelBooking(id)
+      const mapped = {
+        ...updated,
         status: 'cancelada',
         statusLabel: 'Cancelada',
         cancelledReason: reason,
         late: false,
-      })
+      }
       const index = reservations.value.findIndex((item) => item.id === id)
-      if (index !== -1) reservations.value[index] = updated
-      return updated
+      if (index !== -1) reservations.value[index] = mapped
+      return mapped
     } catch (err) {
       error.value = err.message || 'No se pudo cancelar la reserva.'
       throw err

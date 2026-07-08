@@ -120,7 +120,7 @@ const recentActivity = [
 
 onMounted(() => {
   if (!reservationsStore.reservations.length) {
-    reservationsStore.loadReservations()
+    reservationsStore.loadReservations(auth.user?.documentNumber)
   }
 })
 

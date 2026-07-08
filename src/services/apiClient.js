@@ -1,9 +1,5 @@
 import axios from 'axios'
 
-// Aquí va la URL base de la API.
-// Yo la emulé con `VITE_API_URL` en .env; ponga aquí el endpoint real
-// cuando conecte la base de datos 
-
 const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080/api',
   headers: {

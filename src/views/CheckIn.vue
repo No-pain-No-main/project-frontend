@@ -3,47 +3,41 @@
     <div class="hero-panel">
       <div>
         <p class="section-kicker">Check-in estudiantil</p>
-        <h2>Gestiona tu reserva en pocos segundos</h2>
+        <h2>Verifica tu ingreso en segundos</h2>
         <p>
-          Ingresa tu correo institucional y el código de confirmación para ver tu reserva, confirmar tu ingreso o cancelarla si ya no podrás asistir.
+          Ingresa tu número de documento para confirmar la reserva más próxima asociada a tu cuenta.
         </p>
       </div>
 
-      <form class="checkin-form" @submit.prevent="lookupReservation">
-        <label for="emailInput">Correo institucional</label>
-        <input id="emailInput" v-model="emailInput" type="email" placeholder="tu@unal.edu.co" required />
+      <form class="checkin-form" @submit.prevent="verifyCheckIn">
+        <label for="documentInput">Número de documento</label>
+        <input id="documentInput" v-model="documentInput" type="text" placeholder="1018456789" required />
 
-        <label for="codeInput">Código de confirmación</label>
-        <input id="codeInput" v-model="codeInput" type="text" placeholder="Ej. RN32-91" required />
-
-        <button class="primary-button" type="submit">Buscar reserva</button>
+        <button class="primary-button" type="submit" :disabled="loading">
+          {{ loading ? 'Verificando...' : 'Verificar check-in' }}
+        </button>
         <p v-if="feedback" class="checkin-message" :class="feedbackType">{{ feedback }}</p>
       </form>
     </div>
 
-    <section v-if="selectedReservation" class="content-band">
+    <section v-if="selectedBooking" class="content-band">
       <div class="reservation-card">
         <div>
-          <p class="section-kicker">Reserva encontrada</p>
-          <h3>{{ selectedReservation.machine }}</h3>
-          <p class="muted-text">{{ selectedReservation.slot }}</p>
-          <p class="muted-text">Estudiante: {{ selectedReservation.student }}</p>
+          <p class="section-kicker">Reserva verificada</p>
+          <h3>{{ selectedBooking.machine?.name || selectedBooking.machine || 'Reserva activa' }}</h3>
+          <p class="muted-text">{{ selectedBooking.slot || selectedBooking.timeSlot || 'Franja activa' }}</p>
+          <p class="muted-text">Documento: {{ selectedBooking.studentDocumentNumber || documentInput }}</p>
         </div>
 
         <div class="reservation-status">
-          <span class="status-chip" :class="selectedReservation.status">{{ selectedReservation.statusLabel }}</span>
-        </div>
-
-        <div class="reservation-actions">
-          <button class="primary-button" type="button" @click="confirmCheckIn">Confirmar check-in</button>
-          <button class="ghost-button" type="button" @click="cancelReservation">Cancelar reserva</button>
+          <span class="status-chip" :class="selectedBooking.status || 'Activa'">{{ selectedBooking.statusLabel || 'Confirmada' }}</span>
         </div>
       </div>
 
       <div class="info-card">
-        <h3>¿Qué sigue?</h3>
+        <h3>Estado del ingreso</h3>
         <p class="muted-text">
-          Al confirmar tu ingreso se registra tu asistencia para la franja actual. Si no podrás llegar, puedes cancelar la reserva desde esta misma vista.
+          El check-in quedó verificado correctamente para este documento.
         </p>
       </div>
     </section>
@@ -51,63 +45,46 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
-import { useReservationsStore } from '../stores/reservations'
+import { ref } from 'vue'
+import apiClient from '../services/apiClient'
 
-const reservationsStore = useReservationsStore()
-
-const emailInput = ref('')
-const codeInput = ref('')
-const selectedReservation = ref(null)
+const documentInput = ref('')
+const selectedBooking = ref(null)
 const feedback = ref('')
 const feedbackType = ref('')
+const loading = ref(false)
 
-onMounted(() => {
-  if (!reservationsStore.reservations.length) {
-    reservationsStore.loadReservations()
-  }
-})
+const verifyCheckIn = async () => {
+  const documentNumber = documentInput.value.trim()
 
-const lookupReservation = () => {
-  const normalizedEmail = emailInput.value.trim().toLowerCase()
-  const normalizedCode = codeInput.value.trim().toUpperCase()
-
-  const reservation = reservationsStore.reservations.find((item) => {
-    const matchesEmail = item.email?.toLowerCase() === normalizedEmail
-    const matchesCode = item.confirmationCode?.toUpperCase() === normalizedCode
-    return matchesEmail && matchesCode
-  })
-
-  if (!reservation) {
-    selectedReservation.value = null
-    feedback.value = 'No encontramos una reserva con esos datos. Revisa el correo o el código.'
+  if (!documentNumber) {
+    selectedBooking.value = null
+    feedback.value = 'Ingresa un número de documento válido.'
     feedbackType.value = 'error'
     return
   }
 
-  selectedReservation.value = reservation
-  feedback.value = reservation.status === 'confirmada'
-    ? 'Esta reserva ya estaba registrada para el check-in.'
-    : 'Reserva lista para gestionar.'
-  feedbackType.value = reservation.status === 'confirmada' ? 'success' : ''
-}
+  loading.value = true
+  feedback.value = ''
+  feedbackType.value = ''
+  selectedBooking.value = null
 
-const confirmCheckIn = async () => {
-  if (!selectedReservation.value) return
+  try {
+    const { data } = await apiClient.post(`/validator/confirm/${encodeURIComponent(documentNumber)}`)
 
-  const updated = await reservationsStore.confirmAttendance(selectedReservation.value.id)
-  selectedReservation.value = updated
-  feedback.value = 'Tu check-in quedó registrado correctamente.'
-  feedbackType.value = 'success'
-}
+    if (typeof data === 'string') {
+      throw new Error(data)
+    }
 
-const cancelReservation = async () => {
-  if (!selectedReservation.value) return
-
-  const updated = await reservationsStore.cancelReservation(selectedReservation.value.id, 'Cancelada por el estudiante')
-  selectedReservation.value = updated
-  feedback.value = 'La reserva se canceló correctamente.'
-  feedbackType.value = 'error'
+    selectedBooking.value = data
+    feedback.value = 'El check-in fue verificado correctamente.'
+    feedbackType.value = 'success'
+  } catch (err) {
+    feedback.value = err?.response?.data?.message || err?.message || 'No se pudo verificar el documento.'
+    feedbackType.value = 'error'
+  } finally {
+    loading.value = false
+  }
 }
 </script>
 

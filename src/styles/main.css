@@ -1952,6 +1952,78 @@ a {
 }
 
 /* ── MachineCard ───────────────────────── */
+.machines-stepper {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  margin-bottom: 20px;
+}
+
+.machines-stepper__card {
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--surface);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+}
+
+.week-picker,
+.category-picker,
+.timeslot-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.week-picker__day,
+.category-chip,
+.timeslot-chip {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--navy);
+  border-radius: 999px;
+  padding: 8px 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  transition: all 0.15s ease;
+}
+
+.week-picker__day.is-active,
+.category-chip.is-active,
+.timeslot-chip.is-active {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: #fff;
+}
+
+.timeslot-chip.is-occupied {
+  background: #f3f4f6; /* light gray surface */
+  border-color: #e5e7eb;
+  color: #9ca3af;
+  cursor: not-allowed;
+  opacity: 0.9;
+}
+
+.machines-helper,
+.machines-empty,
+.machines-alert {
+  margin-top: 12px;
+}
+
+.machines-results {
+  display: grid;
+  gap: 16px;
+}
+
+.machines-pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+}
+
 .machine-card--full {
   padding: 0;
   overflow: hidden;

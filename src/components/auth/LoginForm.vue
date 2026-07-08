@@ -12,20 +12,39 @@
       </div>
 
       <h2>Inicia sesión</h2>
-      <p class="muted-text">Accede con tu correo institucional para gestionar tus reservas.</p>
+      <p class="muted-text">Selecciona tu tipo de acceso para entrar al sistema.</p>
+
+      <div class="role-switcher" role="tablist" aria-label="Tipo de acceso">
+        <button
+          type="button"
+          class="role-switcher__button"
+          :class="{ active: selectedRole === 'student' }"
+          @click="selectRole('student')"
+        >
+          Estudiante
+        </button>
+        <button
+          type="button"
+          class="role-switcher__button"
+          :class="{ active: selectedRole === 'admin' }"
+          @click="selectRole('admin')"
+        >
+          Administrador
+        </button>
+      </div>
 
       <p v-if="auth.error" class="form-error">{{ auth.error }}</p>
 
       <form class="auth-form" @submit.prevent="handleSubmit">
         <div class="form-field">
-          <label for="documentNumber">Número de documento</label>
+          <label for="documentNumber">{{ selectedRole === 'admin' ? 'Documento del administrador' : 'Número de documento' }}</label>
           <input
             id="documentNumber"
             v-model="form.documentNumber"
             type="text"
             required
             autocomplete="username"
-            placeholder="1018456789"
+            :placeholder="selectedRole === 'admin' ? '1018456789' : '1018456789'"
           />
         </div>
 
@@ -46,18 +65,6 @@
           {{ auth.loading ? 'Ingresando...' : 'Ingresar' }}
         </button>
       </form>
-      
-      <div v-if="isDev" class="dev-shortcut">
-        <p class="muted-text">Modo desarrollo — entrar sin backend:</p>
-        <div class="dev-shortcut__actions">
-          <button class="ghost-button" type="button" @click="handleDemoLogin('estudiante')">
-            Demo estudiante
-          </button>
-          <button class="ghost-button" type="button" @click="handleDemoLogin('admin')">
-            Demo administrador
-          </button>
-        </div>
-      </div>
 
       <p class="auth-card__footer">
         ¿No tienes cuenta? <RouterLink to="/register">Regístrate</RouterLink>
@@ -67,33 +74,34 @@
 </template>
 
 <script setup>
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/auth'
 
 const auth = useAuthStore()
 const router = useRouter()
 const route = useRoute()
-const isDev = import.meta.env.DEV
 
 const form = reactive({
   documentNumber: '',
   password: '',
 })
 
+const selectedRole = ref('student')
+
+function selectRole(role) {
+  selectedRole.value = role
+  auth.error = null
+}
+
 function redirectAfterLogin() {
-  const redirectTo = route.query.redirect || (auth.isAdmin ? '/admin' : '/student/dashboard')
+  const redirectTo = route.query.redirect || (selectedRole.value === 'admin' ? '/admin' : '/student/dashboard')
   router.replace(redirectTo)
 }
 
 async function handleSubmit() {
-  const success = await auth.login(form)
+  const success = await auth.login(form, selectedRole.value)
   if (success) redirectAfterLogin()
-}
-
-function handleDemoLogin(role) {
-  auth.loginAsDemo(role)
-  redirectAfterLogin()
 }
 </script>
 
@@ -110,5 +118,29 @@ function handleDemoLogin(role) {
 
 .back-link:hover {
   text-decoration: underline;
+}
+
+.role-switcher {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 16px 0 8px;
+}
+
+.role-switcher__button {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  padding: 10px 12px;
+  border-radius: 999px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.role-switcher__button.active {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: white;
 }
 </style>

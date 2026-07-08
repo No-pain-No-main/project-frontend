@@ -7,56 +7,10 @@
       </div>
     </div>
 
-    <div class="machines-toolbar">
-      <SearchBar v-model="search" placeholder="Buscar máquina..." />
-      <FilterBar v-model="typeFilter" :options="filterOptions" />
-    </div>
-
-    <div v-if="loading" class="machines-empty">Cargando máquinas…</div>
-
-    <div v-else-if="filteredMachines.length" class="machines-grid">
-      <MachineCard
-        v-for="machine in filteredMachines"
-        :key="machine.id"
-        :machine="machine"
-        mode="student"
-        @reserve="openReserveModal"
-        @details="openDetailsModal"
-      />
-    </div>
-
-    <EmptyState
-      v-else
-      :icon="['fas', 'dumbbell']"
-      title="No encontramos máquinas"
-      description="Prueba con otro nombre o cambia el filtro de tipo."
-    />
-
-    <Modal v-model="showDetails" title="Detalle de la máquina" size="sm">
-      <template v-if="selectedMachine">
-        <img :src="selectedMachine.image" :alt="selectedMachine.name" class="machine-detail__image" />
-        <h3>{{ selectedMachine.name }}</h3>
-        <p class="muted-text">{{ selectedMachine.typeLabel }}</p>
-        <Badge :tone="statusTone(selectedMachine.status)">{{ statusLabel(selectedMachine.status) }}</Badge>
-      </template>
-      <template #footer>
-        <Button variant="outline" size="sm" @click="showDetails = false">Cerrar</Button>
-        <Button
-          variant="primary"
-          size="sm"
-          :disabled="selectedMachine?.status !== 'disponible'"
-          @click="showDetails = false; openReserveModal(selectedMachine)"
-        >
-          Reservar
-        </Button>
-      </template>
-    </Modal>
-
-    <Modal v-model="showReserve" title="Reservar máquina" size="sm">
-      <template v-if="selectedMachine">
-        <p><strong>{{ selectedMachine.name }}</strong></p>
-        <p class="muted-text">Elige un día de la semana actual y una franja de 30 minutos disponible.</p>
-
+    <div class="machines-stepper">
+      <div class="machines-stepper__card">
+        <p class="section-kicker">Paso 1</p>
+        <h4>Selecciona un día</h4>
         <div class="week-picker">
           <button
             v-for="day in weekDays"
@@ -64,12 +18,83 @@
             type="button"
             class="week-picker__day"
             :class="{ 'is-active': day.value === selectedDate }"
-            @click="selectedDate = day.value"
+            @click="selectDate(day.value)"
           >
             <span>{{ day.label }}</span>
             <small>{{ day.short }}</small>
           </button>
         </div>
+      </div>
+
+      <div v-if="selectedDate" class="machines-stepper__card">
+        <p class="section-kicker">Paso 2</p>
+        <h4>Elige una categoría</h4>
+        <div v-if="categoriesLoading" class="machines-helper">Consultando categorías…</div>
+        <div v-else class="category-picker">
+          <button
+            v-for="option in categoryOptions"
+            :key="option.value"
+            type="button"
+            class="category-chip"
+            :class="{ 'is-active': selectedCategory === option.value }"
+            @click="selectCategory(option.value)"
+          >
+            {{ option.label }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="!selectedDate" class="machines-empty">Elige un día para ver las categorías disponibles.</div>
+    <div v-else-if="selectedDate && !selectedCategory" class="machines-empty">Ahora selecciona una categoría para ver las máquinas disponibles.</div>
+    <div v-else-if="machinesLoading" class="machines-empty">Cargando máquinas…</div>
+    <div v-else-if="machinePageState.items.length" class="machines-results">
+      <div class="machines-grid">
+        <article v-for="machine in machinePageState.items" :key="machine.id" class="machine-card machine-card--full">
+          <div class="machine-card__media">
+            <img :src="machine.image || `/maquinas/${defaultImageMap[machine.type] || 'pecho.png'}`" :alt="machine.name" loading="lazy" />
+          </div>
+
+          <div class="machine-card__body">
+            <p class="machine-card__type">{{ machine.typeLabel || machine.type }}</p>
+            <h3>{{ machine.name }}</h3>
+          </div>
+
+          <div class="machine-card__actions">
+            <Button variant="outline" size="sm" @click="openDetailsModal(machine)">Más información</Button>
+            <Button variant="primary" size="sm" @click="openReserveModal(machine)">Reservar</Button>
+          </div>
+        </article>
+      </div>
+
+      <div class="machines-pagination">
+        <Pagination v-model="machinePage" :total-pages="machinePageState.totalPages" />
+      </div>
+    </div>
+
+    <EmptyState
+      v-else
+      :icon="['fas', 'dumbbell']"
+      title="No encontramos máquinas"
+      description="Prueba con otra categoría o cambia el día para ver más opciones."
+    />
+
+    <Modal v-model="showDetails" title="Detalle de la máquina" size="sm">
+      <template v-if="selectedMachine">
+        <img :src="selectedMachine.image" :alt="selectedMachine.name" class="machine-detail__image" />
+        <h3>{{ selectedMachine.name }}</h3>
+        <p class="muted-text">{{ selectedMachine.typeLabel }}</p>
+      </template>
+      <template #footer>
+        <Button variant="outline" size="sm" @click="showDetails = false">Cerrar</Button>
+        <Button variant="primary" size="sm" @click="showDetails = false; openReserveModal(selectedMachine)">Reservar</Button>
+      </template>
+    </Modal>
+
+    <Modal v-model="showReserve" title="Reservar máquina" size="sm">
+      <template v-if="selectedMachine">
+        <p><strong>{{ selectedMachine.name }}</strong></p>
+        <p class="muted-text">Selecciona una franja de 30 minutos disponible para {{ selectedDateLabel }}.</p>
 
         <div v-if="loadingSlots" class="machines-empty">Consultando franjas…</div>
         <div v-else-if="availableSlots.length" class="timeslot-grid">
@@ -78,8 +103,9 @@
             :key="slot.name"
             type="button"
             class="timeslot-chip"
-            :class="{ 'is-active': selectedSlot?.name === slot.name }"
-            @click="selectedSlot = slot"
+            :class="{ 'is-active': selectedSlot?.name === slot.name, 'is-occupied': slot.occupied }"
+            :disabled="slot.occupied"
+            @click="selectSlot(slot)"
           >
             {{ slot.name }}
           </button>
@@ -103,25 +129,16 @@
 
 <script setup>
 import { computed, ref, watch, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import SearchBar from '../components/ui/SearchBar.vue'
-import FilterBar from '../components/ui/FilterBar.vue'
-import Modal from '../components/ui/Modal.vue'
 import Button from '../components/ui/Button.vue'
-import Badge from '../components/ui/Badge.vue'
 import Alert from '../components/ui/Alert.vue'
 import EmptyState from '../components/ui/EmptyState.vue'
-import MachineCard from '../components/cards/MachineCard.vue'
+import Modal from '../components/ui/Modal.vue'
+import Pagination from '../components/ui/Pagination.vue'
 import { useAuthStore } from '../stores/auth'
 import * as reservationService from '../services/reservationService'
 
 const auth = useAuthStore()
-const search = ref('')
-const route = useRoute()
-const router = useRouter()
 
-const machines = ref([])
-const loading = ref(false)
 const loadingSlots = ref(false)
 const availableSlots = ref([])
 const feedback = ref('')
@@ -143,7 +160,7 @@ function formatDateValue(date) {
 
 function buildWeekDays() {
   const base = startOfWeek(new Date())
-  return Array.from({ length: 5 }, (_, index) => {
+  return Array.from({ length: 6 }, (_, index) => {
     const date = new Date(base)
     date.setDate(base.getDate() + index)
     return {
@@ -166,44 +183,30 @@ function getDefaultDateValue() {
 
 const weekDays = ref(buildWeekDays())
 const selectedDate = ref(getDefaultDateValue())
-
-onMounted(() => {
-  if (route.query.q) search.value = String(route.query.q)
-  loadMachines()
+const selectedDateLabel = computed(() => {
+  const day = weekDays.value.find((item) => item.value === selectedDate.value)
+  return day ? day.label : selectedDate.value
 })
 
-watch(search, (val) => {
-  router.replace({ query: { ...route.query, q: val || undefined } })
-})
+const categoryOptions = ref([])
+const categoriesLoading = ref(false)
+const selectedCategory = ref(null)
+const machinesLoading = ref(false)
+const machinePage = ref(1)
+const machinePageState = ref({ items: [], totalElements: 0, totalPages: 1, page: 0, size: 6 })
 
-watch(selectedDate, () => {
-  if (selectedMachine.value) loadAvailability()
-})
-
-const typeFilter = ref('todas')
-const filterOptions = [
-  { label: 'Todas', value: 'todas' },
-  { label: 'Cardio', value: 'cardio' },
-  { label: 'Fuerza libre', value: 'fuerza-libre' },
-  { label: 'Máquina guiada', value: 'guiada' },
-  { label: 'Funcional', value: 'funcional' },
-]
-
-const filteredMachines = computed(() =>
-  machines.value.filter((machine) => {
-    const matchesSearch = machine.name.toLowerCase().includes(search.value.toLowerCase())
-    const matchesType = typeFilter.value === 'todas' || machine.type === typeFilter.value
-    return matchesSearch && matchesType
-  }),
-)
-
-const statusMap = {
-  disponible: { tone: 'success', label: 'Disponible' },
-  reservada: { tone: 'warning', label: 'Reservada' },
-  inactiva: { tone: 'danger', label: 'Inactiva' },
+const defaultImageMap = {
+  cardio: 'cardio.png',
+  funcional: 'brazo.png',
+  'fuerza-libre': 'pecho.png',
+  guiada: 'piernas.png',
+  pierna: 'piernas.png',
+  pecho: 'pecho.png',
+  espalda: 'espalda.png',
+  brazo: 'brazo.png',
 }
-const statusTone = (status) => statusMap[status]?.tone || 'neutral'
-const statusLabel = (status) => statusMap[status]?.label || status
+
+// status badge removed from machine cards; status mappings kept in backend
 
 const showDetails = ref(false)
 const selectedMachine = ref(null)
@@ -215,14 +218,70 @@ function openDetailsModal(machine) {
 
 const showReserve = ref(false)
 const selectedSlot = ref(null)
-const confirmed = ref(false)
+
+function selectDate(date) {
+  selectedDate.value = date
+  selectedCategory.value = null
+  machinePage.value = 1
+  machinePageState.value = { items: [], totalElements: 0, totalPages: 1, page: 0, size: 6 }
+  feedback.value = ''
+}
+
+function selectCategory(value) {
+  selectedCategory.value = value
+  machinePage.value = 1
+  feedback.value = ''
+  loadMachines()
+}
+
+function selectSlot(slot) {
+  if (slot?.occupied) return
+  selectedSlot.value = slot
+}
+
+onMounted(() => {
+  loadCategories()
+})
+
+watch(machinePage, () => {
+  if (selectedCategory.value) {
+    loadMachines()
+  }
+})
+
+async function loadCategories() {
+  categoriesLoading.value = true
+  try {
+    const categories = await reservationService.fetchMachineCategories()
+    categoryOptions.value = categories
+  } finally {
+    categoriesLoading.value = false
+  }
+}
 
 async function loadMachines() {
-  loading.value = true
+  if (!selectedDate.value || !selectedCategory.value) {
+    machinePageState.value = { items: [], totalElements: 0, totalPages: 1, page: 0, size: 6 }
+    return
+  }
+
+  machinesLoading.value = true
   try {
-    machines.value = await reservationService.fetchMachines()
+    const payload = await reservationService.fetchMachines({
+      page: machinePage.value - 1,
+      size: 6,
+      type: selectedCategory.value,
+    })
+
+    machinePageState.value = {
+      items: payload.items || [],
+      totalElements: Number(payload.totalElements || 0),
+      totalPages: Number(payload.totalPages || 1),
+      page: Number(payload.page || 0),
+      size: Number(payload.size || 6),
+    }
   } finally {
-    loading.value = false
+    machinesLoading.value = false
   }
 }
 
@@ -236,6 +295,11 @@ async function loadAvailability() {
   try {
     availableSlots.value = await reservationService.fetchAvailability(selectedMachine.value.id, selectedDate.value)
     selectedSlot.value = null
+  } catch (error) {
+    availableSlots.value = []
+    feedback.value = 'No fue posible consultar franjas en este momento. Intenta de nuevo más tarde.'
+    feedbackTone.value = 'critical'
+    feedbackTitle.value = 'Error de disponibilidad'
   } finally {
     loadingSlots.value = false
   }
@@ -244,10 +308,8 @@ async function loadAvailability() {
 async function openReserveModal(machine) {
   selectedMachine.value = machine
   selectedSlot.value = null
-  confirmed.value = false
   feedback.value = ''
   showReserve.value = true
-  selectedDate.value = getDefaultDateValue()
   await loadAvailability()
 }
 
@@ -268,8 +330,7 @@ async function confirmReservation() {
     })
 
     if (result && typeof result === 'object' && result.id) {
-      confirmed.value = true
-      feedback.value = `Tu reserva quedó creada para ${selectedDate.value} en la franja ${selectedSlot.value.name}.`
+      feedback.value = `Tu reserva quedó creada para ${selectedDateLabel.value} en la franja ${selectedSlot.value.name}.`
       feedbackTone.value = 'success'
       feedbackTitle.value = '¡Reserva creada!'
       await loadAvailability()

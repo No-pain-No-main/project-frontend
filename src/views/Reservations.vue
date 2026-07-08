@@ -74,7 +74,7 @@ const studentId = auth.user?.id ?? 0
 
 onMounted(() => {
   if (!reservationsStore.reservations.length) {
-    reservationsStore.loadReservations()
+    reservationsStore.loadReservations(auth.user?.documentNumber)
   }
 })
 
