@@ -56,6 +56,12 @@
           label="Reservas"
           @navigate="closeMobileSidebar"
         />
+        <SidebarLink
+          to="/admin/reportes"
+          :icon="['fas', 'chart-bar']"
+          label="Reportes"
+          @navigate="closeMobileSidebar"
+        />
       </template>
     </nav>
 
