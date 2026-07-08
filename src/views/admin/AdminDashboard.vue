@@ -1,43 +1,56 @@
 <template>
   <div class="admin-dashboard">
     <h1>Panel de Administración</h1>
-    <p class="muted-text">Bienvenido al panel de administración de FitBook.</p>
 
-    <div class="stats-grid">
-      <div class="stat-card">
-        <font-awesome-icon :icon="['fas', 'users']" class="stat-icon" />
-        <div>
-          <strong>Estudiantes</strong>
-          <span class="stat-value">—</span>
-        </div>
-      </div>
+    <div v-if="loading" class="loading-state">
+      <Loader />
+      <p>Cargando datos...</p>
+    </div>
 
-      <div class="stat-card">
-        <font-awesome-icon :icon="['fas', 'dumbbell']" class="stat-icon" />
-        <div>
-          <strong>Máquinas</strong>
-          <span class="stat-value">—</span>
-        </div>
-      </div>
+    <div v-else-if="error" class="error-state">
+      <p>{{ error }}</p>
+      <button class="retry-btn" @click="loadData">Reintentar</button>
+    </div>
 
-      <div class="stat-card">
-        <font-awesome-icon :icon="['fas', 'calendar-check']" class="stat-icon" />
-        <div>
-          <strong>Reservas hoy</strong>
-          <span class="stat-value">—</span>
-        </div>
-      </div>
-
-      <div class="stat-card">
-        <font-awesome-icon :icon="['fas', 'clock']" class="stat-icon" />
-        <div>
-          <strong>Validaciones</strong>
-          <span class="stat-value">—</span>
-        </div>
-      </div>
+    <div v-else class="charts-grid">
+      <PeakHoursChart :bookings="bookings" />
+      <MachineWearChart :bookings="bookings" :machines="machines" />
     </div>
   </div>
 </template>
+
+<script setup>
+import { ref, onMounted } from 'vue'
+import { fetchBookings, fetchMachines } from '../../services/adminService'
+import PeakHoursChart from '../../components/admin/PeakHoursChart.vue'
+import MachineWearChart from '../../components/admin/MachineWearChart.vue'
+import Loader from '../../components/ui/Loader.vue'
+
+const bookings = ref([])
+const machines = ref([])
+const loading = ref(true)
+const error = ref(null)
+
+async function loadData() {
+  loading.value = true
+  error.value = null
+  try {
+    const [bookingsData, machinesData] = await Promise.all([
+      fetchBookings(),
+      fetchMachines()
+    ])
+    bookings.value = bookingsData
+    machines.value = machinesData
+  } catch (err) {
+    console.error('Error al cargar datos del dashboard:', err)
+    error.value = 'No se pudieron cargar los datos. Verifica la conexión con el servidor.'
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(loadData)
+</script>
 
 <style scoped>
 .admin-dashboard {
@@ -45,41 +58,49 @@
 }
 
 .admin-dashboard h1 {
-  margin-bottom: 8px;
+  margin-bottom: 24px;
 }
 
-.stats-grid {
+.charts-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 20px;
-  margin-top: 24px;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
 }
 
-.stat-card {
+@media (max-width: 1100px) {
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.loading-state,
+.error-state {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 16px;
-  background: #fff;
-  border-radius: 10px;
-  padding: 20px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  justify-content: center;
+  padding: 60px 20px;
+  color: var(--gray-600, #6c757d);
 }
 
-.stat-icon {
-  font-size: 2rem;
-  color: var(--blue);
+.error-state p {
+  margin: 0 0 16px;
+  font-size: 1rem;
 }
 
-.stat-card strong {
-  display: block;
-  font-size: 0.9rem;
-  color: var(--gray-600);
-  margin-bottom: 4px;
+.retry-btn {
+  padding: 8px 20px;
+  background: var(--blue, #0d6efd);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
 }
 
-.stat-value {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--gray-900);
+.retry-btn:hover {
+  background: #0b5ed7;
 }
 </style>
