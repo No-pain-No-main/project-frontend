@@ -104,13 +104,14 @@
       <div class="filter-popup edit-popup" @click.stop>
         <h4>{{ editing ? 'Editar Máquina' : 'Agregar Máquina' }}</h4>
         <div class="edit-form">
-          <label>Nombre <input v-model="form.name" placeholder="Nombre de la máquina" /></label>
+          <label>Nombre <input v-model="form.name" placeholder="Nombre de la máquina" required /></label>
+          <p v-if="formError" class="form-error">{{ formError }}</p>
           <label>Tipo
             <select v-model.number="form.typeId">
               <option v-for="t in typeOptions" :key="t.id" :value="t.id">{{ t.name }}</option>
             </select>
           </label>
-          <label v-if="editing">Estado
+          <label>Estado
             <select v-model.number="form.statusId">
               <option v-for="s in statusOptions" :key="s.id" :value="s.id">{{ s.name }}</option>
             </select>
@@ -198,24 +199,30 @@ const showForm = ref(false)
 const editing = ref(false)
 const editingId = ref(null)
 const form = reactive({ name: '', typeId: 1, statusId: 1 })
+const formError = ref('')
 
 function openCreate() {
   editing.value = false; editingId.value = null
-  form.name = ''; form.typeId = 1; form.statusId = 1; showForm.value = true
+  form.name = ''; form.typeId = 1; form.statusId = 1; formError.value = ''; showForm.value = true
 }
 
 function openEdit(row) {
   closeMenu()
   editing.value = true; editingId.value = row.id
   form.name = row.name; form.typeId = row.machineType?.id || 1; form.statusId = row.machineStatus?.id || 1
-  showForm.value = true
+  formError.value = ''; showForm.value = true
 }
 
 async function saveForm() {
+  if (!form.name.trim()) {
+    formError.value = 'El nombre de la máquina es obligatorio.'
+    return
+  }
+  formError.value = ''
   if (editing.value) {
     await store.editMachine(editingId.value, { name: form.name, typeId: form.typeId, statusId: form.statusId })
   } else {
-    await store.addMachine(JSON.stringify({ name: form.name, machineType: { id: form.typeId } }))
+    await store.addMachine(JSON.stringify({ name: form.name, machineType: { id: form.typeId }, machineStatus: { id: form.statusId } }))
   }
   showForm.value = false
 }
@@ -265,6 +272,7 @@ onMounted(() => { if (!store.machines.length) store.loadMachines() })
 .edit-popup { min-width: 360px; }
 .edit-form label { display: block; margin-bottom: 12px; font-size: 0.9rem; color: var(--gray-700); }
 .edit-form input, .edit-form select { display: block; width: 100%; padding: 8px 12px; border: 1px solid var(--gray-300); border-radius: 8px; font-size: 0.9rem; margin-top: 4px; box-sizing: border-box; }
+.form-error { color: #dc3545; font-size: 0.85rem; margin: -8px 0 12px 0; }
 .edit-actions { display: flex; gap: 12px; margin-top: 16px; }
 .save-btn { padding: 8px 20px; background: var(--blue); color: #fff; border: none; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; }
 .save-btn:hover { opacity: 0.9; }
